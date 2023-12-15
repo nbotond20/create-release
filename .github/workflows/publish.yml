@@ -1,0 +1,32 @@
+name: Build and publish
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+jobs:
+  build_and_publish:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: ".nvmrc"
+          registry-url: "https://npm.pkg.github.com"
+          scope: "@infinitaslearning"
+
+      - run: git config --global user.email "github@infinitaslearning.com"
+      - run: git config --global user.name "Infinitas Learning"
+      - run: npm version `npm pkg get version | tr -d '"' | cut -d '.' -f 1-2`.${{ github.run_number }}
+
+      - run: echo "//npm.pkg.github.com/:_authToken=${{ secrets.GITHUB_TOKEN }}" >> .npmrc
+      - run: npm ci
+
+      - run: npm run test
+      - run: npm run build
+      # - run: npm publish
+      #   env:
+      #     NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
