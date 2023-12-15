@@ -1,6 +1,0 @@
-#!/bin/sh
-. "$(dirname "$0")/_/husky.sh"
-
-pnpm build 
-git add dist
-git commit -m "pre-push: build dist"
