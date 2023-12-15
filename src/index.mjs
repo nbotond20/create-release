@@ -259,7 +259,7 @@ async function createRelease(version) {
     throw new Error("GITHUB_REPOSITORY is not set");
   }
 
-  if (/* core.getInput("SLACK_BOT_TOKEN") */ true)
+  if (core.getInput("SLACK_BOT_TOKEN"))
     await sendSlackReleaseNotes(version.toString());
 
   await octokit.request("POST /repos/{owner}/{repo}/releases", {

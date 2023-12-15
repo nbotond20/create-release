@@ -20,6 +20,8 @@ inputs:
   repostChannels:
     description: "Channels to repost to"
     required: true
+  SLACK_BOT_TOKEN:
+    description: "Slack bot token"
 
 outputs:
   version:
