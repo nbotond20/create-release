@@ -1,9 +1,8 @@
 name: Publish
 
 on:
-  push:
-    branches:
-      - main
+  workflow_call:
+  workflow_dispatch:
 
 jobs:
   build:
@@ -30,7 +29,8 @@ jobs:
       - name: Build
         run: pnpm build
 
-      - uses: JasonEtco/build-and-tag-action@v2
+      - name: Publish
+        uses: JasonEtco/build-and-tag-action@v2
         env:
           GITHUB_TOKEN: ${{ github.token }}
         with:

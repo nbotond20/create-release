@@ -16,10 +16,8 @@ inputs:
     description: "Add divider in release notes"
   channel:
     description: "Channel to publish to"
-    required: true
   repostChannels:
     description: "Channels to repost to"
-    required: true
   SLACK_BOT_TOKEN:
     description: "Slack bot token"
 
