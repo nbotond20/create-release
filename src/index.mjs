@@ -17,6 +17,7 @@ async function sendSlackReleaseNotes(version) {
     addDivider: core.getInput("addDivider") ?? true,
     channel: core.getInput("channel") ?? "",
     repostChannels: core.getInput("repostChannels") ?? "",
+    SLACK_BOT_TOKEN: core.getInput("SLACK_BOT_TOKEN") ?? "",
   };
 
   if (!input.channel) {
@@ -218,9 +219,6 @@ async function sendSlackReleaseNotes(version) {
     ],
   };
 
-  const SLACK_BOT_TOKEN =
-    "xoxb-6269943513543-6307394151552-7Bz7C1zzc4upuXQO2PIV1s5F";
-
   const slackAPIResponse = await fetch(
     "https://slack.com/api/chat.postMessage",
     {
@@ -228,7 +226,7 @@ async function sendSlackReleaseNotes(version) {
       body: JSON.stringify(slackPayload),
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${SLACK_BOT_TOKEN}`,
+        Authorization: `Bearer ${input.SLACK_BOT_TOKEN}`,
       },
     },
   );
@@ -253,8 +251,7 @@ async function createRelease(version) {
     throw new Error("GITHUB_REPOSITORY is not set");
   }
 
-  if (process.env.SLACK_BOT_TOKEN)
-    await sendSlackReleaseNotes(version.toString());
+  if (input.SLACK_BOT_TOKEN) await sendSlackReleaseNotes(version.toString());
 
   await octokit.request("POST /repos/{owner}/{repo}/releases", {
     owner,
