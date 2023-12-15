@@ -1,6 +1,7 @@
 on:
-  workflow_call:
-  workflow_dispatch:
+  push:
+    branches:
+      - main
 
 env:
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -17,11 +18,7 @@ jobs:
       - name: Install Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: 18.16
-
-      - name: Setup .npmrc
-        run: |
-          echo "//npm.pkg.github.com/:_authToken=${{secrets.IL_NPM_INFINITASLEARNING_GITHUB_READONLY_TOKEN}}" >> .npmrc
+          node-version: 20.2
 
       - uses: pnpm/action-setup@v2
         name: Install pnpm
