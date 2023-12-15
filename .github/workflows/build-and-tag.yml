@@ -1,0 +1,43 @@
+name: Build and Push with Version Tag
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: 20.2
+
+      - name: Install Dependencies
+        run: npm install
+
+      - name: Build Project
+        run: npm run build
+
+      - name: Determine Latest Version Tag
+        id: version
+        run: |
+          latest_tag=$(git describe --tags --abbrev=0)
+          IFS='.' read -r major minor <<< "${latest_tag#v}"
+          new_minor=$((minor + 1))
+          new_version="v${major}.${new_minor}"
+          echo "::set-output name=new_version::$new_version"
+
+      - name: Commit and Push Changes with Tag
+        run: |
+          git config --global user.email "actions@github.com"
+          git config --global user.name "${GITHUB_ACTOR}"
+          git add .
+          git commit -m "Auto-build and push"
+          git tag ${{ steps.version.outputs.new_version }}
+          git push origin main --follow-tags
