@@ -20,6 +20,10 @@ async function sendSlackReleaseNotes(version) {
     SLACK_BOT_TOKEN: core.getInput("SLACK_BOT_TOKEN") ?? "",
   };
 
+  console.log("input", input);
+
+  return 
+
   if (!input.channel) {
     throw new Error("Channel is not set");
   }
@@ -251,7 +255,8 @@ async function createRelease(version) {
     throw new Error("GITHUB_REPOSITORY is not set");
   }
 
-  if (input.SLACK_BOT_TOKEN) await sendSlackReleaseNotes(version.toString());
+  if (/* core.getInput("SLACK_BOT_TOKEN") */ true)
+    await sendSlackReleaseNotes(version.toString());
 
   await octokit.request("POST /repos/{owner}/{repo}/releases", {
     owner,
