@@ -7,22 +7,26 @@ const versionNumberPattern = /^v(\d{4})\.(\d+)$/;
 const octokit = new Octokit();
 const [owner, repo] = process.env.GITHUB_REPOSITORY.split("/");
 
+function getBooleanInput(name, defaultValue) {
+  const value = core.getInput(name);
+  if (!value) {
+    return defaultValue;
+  }
+  return value === "true";
+}
+
 async function sendSlackReleaseNotes(version) {
   const input = {
-    title: core.getInput("title") ?? "",
-    hideAuthors: core.getInput("hideAuthors") ?? false,
-    hidePRs: core.getInput("hidePRs") ?? false,
-    hideFullChangeLogLink: core.getInput("hideFullChangeLogLink") ?? false,
-    hideTitle: core.getInput("hideTitle") ?? false,
-    addDivider: core.getInput("addDivider") ?? true,
-    channel: core.getInput("channel") ?? "",
-    repostChannels: core.getInput("repostChannels") ?? "",
-    SLACK_BOT_TOKEN: core.getInput("SLACK_BOT_TOKEN") ?? "",
+    title: core.getInput("title"),
+    hideAuthors: getBooleanInput("hideAuthors", false),
+    hidePRs: getBooleanInput("hidePRs", false),
+    hideFullChangeLogLink: getBooleanInput("hideFullChangeLogLink", false),
+    hideTitle: getBooleanInput("hideTitle", false),
+    addDivider: getBooleanInput("addDivider", true),
+    channel: core.getInput("channel"),
+    repostChannels: core.getInput("repostChannels"),
+    SLACK_BOT_TOKEN: core.getInput("SLACK_BOT_TOKEN"),
   };
-
-  console.log("input", input);
-
-  return 
 
   if (!input.channel) {
     throw new Error("Channel is not set");
