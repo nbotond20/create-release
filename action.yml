@@ -1,13 +1,30 @@
-name: "Hello World"
-description: "Greet someone and record the time"
+name: "Create release"
+description: "Create a release"
+
 inputs:
-  who-to-greet: # id of input
-    description: "Who to greet"
+  title:
+    description: "Title of the release"
+  hideAuthors:
+    description: "Hide authors in release notes"
+  hidePRs:
+    description: "Hide PRs in release notes"
+  hideFullChangeLogLink:
+    description: "Hide full changelog link in release notes"
+  hideTitle:
+    description: "Hide title in release notes"
+  addDivider:
+    description: "Add divider in release notes"
+  channel:
+    description: "Channel to publish to"
     required: true
-    default: "World"
+  repostChannels:
+    description: "Channels to repost to"
+    required: true
+
 outputs:
-  time: # id of output
-    description: "The time we greeted you"
+  version:
+    description: "The version of the release"
+
 runs:
   using: "node20"
-  main: "dist/index.js"
+  main: "dist/index.mjs"
