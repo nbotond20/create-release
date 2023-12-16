@@ -44,6 +44,11 @@ async function sendSlackReleaseNotes(version) {
 
   console.log("Slack release notes response", JSON.stringify(response));
 
+  if (!response.body) {
+    console.warn("No release notes found");
+    return;
+  }
+
   const createSlackLinkFromPRLink = (prLink) => {
     const prNumber = prLink.split("/").pop();
     return `<${prLink}|#${prNumber}>`;
