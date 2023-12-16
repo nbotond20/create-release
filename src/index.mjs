@@ -42,13 +42,12 @@ async function sendSlackReleaseNotes(version) {
     },
   );
 
-  console.log("Slack release notes response", JSON.stringify(data));
-
   const createSlackLinkFromPRLink = (prLink) => {
     const prNumber = prLink.split("/").pop();
     return `<${prLink}|#${prNumber}>`;
   };
 
+  console.log("Slack release notes response", JSON.stringify(data));
   let body = data.body;
 
   // Get title (replace $release_name with the version number if needed)

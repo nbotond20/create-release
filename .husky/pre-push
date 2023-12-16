@@ -2,6 +2,7 @@
 . "$(dirname "$0")/_/husky.sh"
 
 pnpm run build
+git restore --staged .
 git add dist
 
 if [[ $(git diff --cached --name-only | grep dist) ]]; then
