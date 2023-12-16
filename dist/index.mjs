@@ -52853,7 +52853,7 @@ function getBooleanInput(name, defaultValue) {
   return value === "true";
 }
 
-async function sendSlackReleaseNotes(version) {
+async function sendSlackReleaseNotes(version, data) {
   const input = {
     title: core.getInput("title"),
     hideAuthors: getBooleanInput("hideAuthors", false),
@@ -52869,16 +52869,6 @@ async function sendSlackReleaseNotes(version) {
   if (!input.channel) {
     throw new Error("Channel is not set");
   }
-
-  const { data } = await octokit.request(
-    "POST /repos/{owner}/{repo}/releases/generate-notes",
-    {
-      owner,
-      repo,
-      tag_name: version,
-      target_commitish: process.env.GITHUB_SHA,
-    },
-  );
 
   const createSlackLinkFromPRLink = (prLink) => {
     const prNumber = prLink.split("/").pop();
@@ -53098,16 +53088,19 @@ async function createRelease(version) {
     throw new Error("GITHUB_REPOSITORY is not set");
   }
 
-  if (core.getInput("SLACK_BOT_TOKEN"))
-    await sendSlackReleaseNotes(version.toString());
+  const { data } = await octokit.request(
+    "POST /repos/{owner}/{repo}/releases",
+    {
+      owner,
+      repo,
+      tag_name: version.toString(),
+      generate_release_notes: true,
+      target_commitish: process.env.GITHUB_SHA,
+    },
+  );
 
-  await octokit.request("POST /repos/{owner}/{repo}/releases", {
-    owner,
-    repo,
-    tag_name: version.toString(),
-    generate_release_notes: true,
-    target_commitish: process.env.GITHUB_SHA,
-  });
+  if (core.getInput("SLACK_BOT_TOKEN"))
+    await sendSlackReleaseNotes(version.toString(), data);
 
   core.setOutput("version", version.toString());
 }
