@@ -2,13 +2,10 @@
 . "$(dirname "$0")/_/husky.sh"
 
 pnpm run build
+git add dist
 
 if [[ $(git diff --cached --name-only | grep dist) ]]; then
   echo "dist folder is in git changes"
+  git commit -m "🤖 Auto build update"
   exit 0
-else
-  echo "dist folder is not in git changes"
-  exit 1
 fi
-
-exit 1
