@@ -31,11 +31,8 @@ jobs:
         run: pnpm install
 
       - name: Create release
-        uses: nbotond20/create-release@v1.10
+        uses: nbotond20/create-release@v2312.1
         id: create-release
-        with:
-          channel: "il-se-pullrequest-notification"
-          repostChannels: "supportteams;il-se-platform"
 
       - name: Publish
         uses: JasonEtco/build-and-tag-action@v2
