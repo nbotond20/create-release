@@ -1,4 +1,8 @@
 #!/bin/sh
 . "$(dirname "$0")/_/husky.sh"
 
-pnpm pre-push-build
+pnpm run build
+if [ -d "dist" ]; then
+  git add dist
+  git commit -m "chore: update dist"
+fi
