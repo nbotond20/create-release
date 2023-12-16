@@ -31,7 +31,7 @@ jobs:
         run: pnpm install
 
       - name: Create release
-        uses: nbotond20/create-release@27ee76e5a5e6be1d2d223314bd327a24f3347baf
+        uses: nbotond20/create-release@v2312.3
         id: create-release
 
       # - name: Publish
