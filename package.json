@@ -6,7 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "ncc build src/index.mjs -o dist",
-    "push-build": "pnpm build && git add dist && git commit -m \"Auto build\"",
+    "pre-push-build": "pnpm build && git add dist && git commit -m \"🤖 Auto build\"",
     "prepare": "husky install"
   },
   "keywords": [],
