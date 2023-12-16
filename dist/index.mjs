@@ -52870,7 +52870,7 @@ async function sendSlackReleaseNotes(version) {
     throw new Error("Channel is not set");
   }
 
-  const response = await octokit.request(
+  const { data } = await octokit.request(
     "POST /repos/{owner}/{repo}/releases/generate-notes",
     {
       owner,
@@ -52880,19 +52880,14 @@ async function sendSlackReleaseNotes(version) {
     },
   );
 
-  console.log("Slack release notes response", JSON.stringify(response));
-
-  if (!response.body) {
-    console.warn("No release notes found");
-    return;
-  }
+  console.log("Slack release notes response", JSON.stringify(data));
 
   const createSlackLinkFromPRLink = (prLink) => {
     const prNumber = prLink.split("/").pop();
     return `<${prLink}|#${prNumber}>`;
   };
 
-  let body = response.body;
+  let body = data.body;
 
   // Get title (replace $release_name with the version number if needed)
   const title = input.title
