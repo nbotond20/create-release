@@ -52890,8 +52890,8 @@ async function sendSlackReleaseNotes(version) {
 
   // Get title (replace $release_name with the version number if needed)
   const title = input.title
-    ? input.title.replace("$release_name", response.name)
-    : response.name;
+    ? input.title.replace("$release_name", data.name)
+    : data.name;
 
   // Get full changelog link
   const fullChangelogLink = body.split("\n\n\n").pop().trim();
