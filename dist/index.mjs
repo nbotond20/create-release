@@ -52874,7 +52874,7 @@ function getBooleanInput(name, defaultValue) {
   return value === "true";
 }
 
-async function sendSlackReleaseNotes(version, data) {
+async function sendSlackReleaseNotes(data) {
   const input = {
     title: core.getInput("title"),
     hideAuthors: getBooleanInput("hide-authors", false),
@@ -53123,8 +53123,7 @@ async function createRelease(version) {
     },
   );
 
-  if (core.getInput("SLACK_BOT_TOKEN"))
-    await sendSlackReleaseNotes(isValidTag ? tag : version.toString(), data);
+  if (core.getInput("SLACK_BOT_TOKEN")) await sendSlackReleaseNotes(data);
 
   core.setOutput("version", isValidTag ? tag : version.toString());
 }
