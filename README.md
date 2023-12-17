@@ -10,7 +10,7 @@ This action creates a release in GitHub. If a slack bot token is provided, it wi
 ### Slack inputs
 
 - `SLACK_BOT_TOKEN`: Slack bot token
-- `title`: Title of the release
+- `title`: Title of the release (You can use the `$release_name` variable to include the release name)
 - `hide-authors`: Hide authors in release notes
 - `hide-prs`: Hide PRs in release notes
 - `hide-full-change-log-link`: Hide full changelog link in release notes
