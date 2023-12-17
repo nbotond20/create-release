@@ -26,7 +26,7 @@ This action creates a release in GitHub. If a slack bot token is provided, it wi
 ## Example usage
 
 > [!IMPORTANT]
-> You will need to set `GITHUB_TOKEN` in environment variables for this action to work and you will need to provide write access to the repository for the bot user.
+> You will need to set `GITHUB_TOKEN` in environment variables and need to provide write access to the repository.
 
 ```yaml
 name: Create release
