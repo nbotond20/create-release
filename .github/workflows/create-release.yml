@@ -38,7 +38,7 @@ jobs:
         run: pnpm install
 
       - name: Create release
-        uses: nbotond20/create-release@v1.0.2
+        uses: nbotond20/create-release@3196ac90791e6eca891388379a87334a99c11cfe
         id: create-release
         with:
           use-sem-ver: true
