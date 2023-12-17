@@ -1,23 +1,33 @@
-# Hello world javascript action
+# Create release action
 
-This action prints "Hello World" or "Hello" + the name of a person to greet to the log.
+This action creates a release in GitHub. If a slack bot token is provided, it will also send a message to a slack channel.
 
 ## Inputs
 
-### `who-to-greet`
+- `use-sem-ver`: Use semantic versioning
+- `tag`: Tag to use for the release
 
-**Required** The name of the person to greet. Default `"World"`.
+### Slack inputs
+
+- `SLACK_BOT_TOKEN`: Slack bot token
+- `title`: Title of the release
+- `hide-authors`: Hide authors in release notes
+- `hide-prs`: Hide PRs in release notes
+- `hide-full-change-log-link`: Hide full changelog link in release notes
+- `hide-title`: Hide title in release notes
+- `add-divider`: Add divider in release notes
+- `channel`: Channel to publish to
+- `repost-channels`: Channels to repost to (`;` separated)
 
 ## Outputs
 
-### `time`
-
-The time we greeted you.
+- `version`: The version of the release
 
 ## Example usage
 
 ```yaml
-uses: actions/hello-world-javascript-action@e76147da8e5c81eaf017dede5645551d4b94427b
+uses: nbotond20/create-release@v1.0.2
 with:
-  who-to-greet: "Mona the Octocat"
+  use-sem-ver: true # Optional
+  tag: v1.0.0 # Optional
 ```
