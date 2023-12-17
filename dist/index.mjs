@@ -52926,7 +52926,7 @@ async function sendSlackReleaseNotes(data) {
       .join("\n");
   } else {
     sections = body
-      .replace(`\n\n${fullChangelogLink}`, "") // Remove the changelog from the body
+      .replace(`${fullChangelogLink}`, "") // Remove the changelog from the body
       .trim() // Remove leading and trailing newlines
       .replace(/## What's Changed\n/g, "") // Remove ## title
       .replaceAll("*", "•"); // Replace * with •
@@ -52996,6 +52996,7 @@ async function sendSlackReleaseNotes(data) {
     ? sections.split("<section-title>").slice(1)
     : [sections]; // Split into sections and remove the first empty section
   const sectionBlocks = sectionArray
+    .filter((section) => section !== "") // Remove empty sections
     .map((section) => {
       return {
         text: {
