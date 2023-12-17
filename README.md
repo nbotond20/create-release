@@ -48,7 +48,7 @@ jobs:
           use-sem-ver: true
 ```
 
-If you want to see nicely structured release notes in slack, you can create a `release.yml` under the `.github` folder with the following content:
+If you want to see nicely structured release notes, you can create a `release.yml` file under the `.github` folder with the following content:
 
 ```yaml
 # .github/release.yml
