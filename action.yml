@@ -4,22 +4,24 @@ description: "Create a release"
 inputs:
   title:
     description: "Title of the release"
-  hideAuthors:
+  hide-authors:
     description: "Hide authors in release notes"
-  hidePRs:
+  hide-prs:
     description: "Hide PRs in release notes"
-  hideFullChangeLogLink:
+  hide-full-change-log-link:
     description: "Hide full changelog link in release notes"
-  hideTitle:
+  hide-title:
     description: "Hide title in release notes"
-  addDivider:
+  add-divider:
     description: "Add divider in release notes"
   channel:
     description: "Channel to publish to"
-  repostChannels:
+  repost-channels:
     description: "Channels to repost to"
   SLACK_BOT_TOKEN:
     description: "Slack bot token"
+  use-sem-ver:
+    description: "Use semantic versioning"
 
 outputs:
   version:

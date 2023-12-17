@@ -33,8 +33,3 @@ jobs:
       - name: Create release
         uses: nbotond20/create-release@v2312.3
         id: create-release
-
-      # - name: Publish
-      #   uses: JasonEtco/build-and-tag-action@v2
-      #   with:
-      #     tag_name: ${{ steps.create-release.outputs.version }}
