@@ -19,27 +19,8 @@ jobs:
     permissions:
       contents: write
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-
-      - name: Install Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: 20.2
-
-      - uses: pnpm/action-setup@v2
-        name: Install pnpm
-        id: pnpm-install
-        with:
-          version: 8
-          run_install: false
-
-      - name: Install dependencies
-        run: pnpm install
-
       - name: Create release
         uses: nbotond20/create-release@v1.1.1
-        id: create-release
         with:
           use-sem-ver: true
           tag: ${{ inputs.tag }}

@@ -2,15 +2,6 @@
 
 This action creates a release in GitHub. If a slack bot token is provided, it will also send a message to a slack channel.
 
-> [!IMPORTANT]
-> You will need to set `GITHUB_TOKEN` in environment variables for this action to work.
-> Example:
->
-> ```yaml
-> env:
->   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-> ```
-
 ## Inputs
 
 - `use-sem-ver`: Use semantic versioning
@@ -34,9 +25,25 @@ This action creates a release in GitHub. If a slack bot token is provided, it wi
 
 ## Example usage
 
+> [!IMPORTANT]
+> You will need to set `GITHUB_TOKEN` in environment variables for this action to work and you will need to provide write access to the repository for the bot user.
+
 ```yaml
-uses: nbotond20/create-release@v1.0.2
-with:
-  use-sem-ver: true # Optional
-  tag: v1.0.0 # Optional
+name: Create release
+on:
+  push:
+    branches:
+      - main
+env:
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+jobs:
+  create-release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Create release
+        uses: nbotond20/create-release@v1.1.1
+        with:
+          use-sem-ver: true
 ```
