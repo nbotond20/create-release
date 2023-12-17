@@ -22,6 +22,8 @@ inputs:
     description: "Slack bot token"
   use-sem-ver:
     description: "Use semantic versioning"
+  tag:
+    description: "Tag to use for the release"
 
 outputs:
   version:
