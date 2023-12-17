@@ -39,7 +39,6 @@ async function sendSlackReleaseNotes(data) {
     return `<${prLink}|#${prNumber}>`;
   };
 
-  console.log("Slack release notes response", JSON.stringify(data));
   let body = data.body;
 
   // Get title (replace $release_name with the version number if needed)
