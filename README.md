@@ -47,3 +47,30 @@ jobs:
         with:
           use-sem-ver: true
 ```
+
+If you want to see nicely structured release notes in slack, you can create a `release.yml` under the `.github` folder with the following content:
+
+```yaml
+# .github/release.yml
+
+changelog:
+  exclude:
+    labels:
+      - ignore-for-release
+    authors:
+      - octocat
+  categories:
+    - title: Breaking Changes 🛠
+      labels:
+        - Semver-Major
+        - breaking-change
+    - title: Exciting New Features 🎉
+      labels:
+        - Semver-Minor
+        - enhancement
+    - title: Other Changes
+      labels:
+        - "*"
+```
+
+For more information about the custom release notes, check out the offical github [documentation](https://docs.github.com/en/repositories/releasing-projects-on-github/automatically-generated-release-notes).
