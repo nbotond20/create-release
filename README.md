@@ -2,6 +2,15 @@
 
 This action creates a release in GitHub. If a slack bot token is provided, it will also send a message to a slack channel.
 
+> [!IMPORTANT]
+> You will need to set `GITHUB_TOKEN` in environment variables for this action to work.
+> Example:
+>
+> ```yaml
+> env:
+>   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+> ```
+
 ## Inputs
 
 - `use-sem-ver`: Use semantic versioning
