@@ -9,6 +9,8 @@ This action creates a release in GitHub. If a slack bot token is provided, it wi
 
 ### Slack inputs
 
+For this to work you'll need to create a Slack app and add it to your workspace. You'll also need to enable `Incoming Webhooks` for your app. You can find more information about this [here](https://api.slack.com/authentication/basics).
+
 - `SLACK_BOT_TOKEN`: Slack bot token
 - `title`: Title of the release (You can use the `$release_name` variable to include the release name)
 - `hide-authors`: Hide authors in release notes
