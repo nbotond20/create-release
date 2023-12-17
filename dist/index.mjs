@@ -52835,12 +52835,33 @@ class Version {
 var core = __nccwpck_require__(9093);
 // EXTERNAL MODULE: ./node_modules/.pnpm/@octokit+action@6.0.7/node_modules/@octokit/action/dist-node/index.js
 var dist_node = __nccwpck_require__(4079);
+;// CONCATENATED MODULE: ./src/semantic-version.mjs
+class SemanticVersion {
+  /**
+   * @param {number} major
+   * @param {number} minor
+   * @param {number} patch
+   */
+
+  constructor(major = 1, minor = 0, patch = 0) {
+    this.major = major;
+    this.minor = minor;
+    this.patch = patch;
+  }
+
+  toString() {
+    return `v${this.major}.${this.minor}.${this.patch}`;
+  }
+}
+
 ;// CONCATENATED MODULE: ./src/index.mjs
 
 
 
 
+
 const versionNumberPattern = /^v(\d{4})\.(\d+)$/;
+const semverPattern = /^v(\d+)\.(\d+)\.(\d+)$/;
 
 const octokit = new dist_node.Octokit();
 const [owner, repo] = process.env.GITHUB_REPOSITORY.split("/");
@@ -52856,13 +52877,13 @@ function getBooleanInput(name, defaultValue) {
 async function sendSlackReleaseNotes(version, data) {
   const input = {
     title: core.getInput("title"),
-    hideAuthors: getBooleanInput("hideAuthors", false),
-    hidePRs: getBooleanInput("hidePRs", false),
-    hideFullChangeLogLink: getBooleanInput("hideFullChangeLogLink", false),
-    hideTitle: getBooleanInput("hideTitle", false),
-    addDivider: getBooleanInput("addDivider", true),
+    hideAuthors: getBooleanInput("hide-authors", false),
+    hidePRs: getBooleanInput("hide-prs", false),
+    hideFullChangeLogLink: getBooleanInput("hide-full-change-log-link", false),
+    hideTitle: getBooleanInput("hide-title", false),
+    addDivider: getBooleanInput("add-divider", false),
     channel: core.getInput("channel"),
-    repostChannels: core.getInput("repostChannels"),
+    repostChannels: core.getInput("repost-channels"),
     SLACK_BOT_TOKEN: core.getInput("SLACK_BOT_TOKEN"),
   };
 
@@ -53118,7 +53139,8 @@ async function run() {
       throw err;
     }
   }
-  const nextVersion = new Version(new Date());
+
+  const useSemVer = core.getInput("use-sem-ver") === "true";
 
   if (!release) {
     console.log("No previous release found.");
@@ -53126,13 +53148,25 @@ async function run() {
     return;
   }
 
-  const lastVersion = versionNumberPattern.exec(release.name);
+  const lastVersion = useSemVer
+    ? semverPattern.exec(release.name)
+    : versionNumberPattern.exec(release.name);
+
+  const nextVersion = useSemVer
+    ? new SemanticVersion()
+    : new Version(new Date());
+
   if (lastVersion) {
     console.log(`Found previous version with valid name: ${lastVersion[0]}`);
-    nextVersion.revision =
-      lastVersion[1] === nextVersion.datePart
-        ? parseInt(lastVersion[2], 10) + 1
-        : 1;
+
+    if (useSemVer) {
+      nextVersion.patch = parseInt(lastVersion[3], 10) + 1;
+    } else {
+      nextVersion.revision =
+        lastVersion[1] === nextVersion.datePart
+          ? parseInt(lastVersion[2], 10) + 1
+          : 1;
+    }
   } else {
     console.warn("Last version number does not match the pattern");
   }
