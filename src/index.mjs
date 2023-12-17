@@ -252,21 +252,24 @@ async function createRelease(version) {
     throw new Error("GITHUB_REPOSITORY is not set");
   }
 
+  const tag = core.getInput("tag");
+  const isValidTag = versionNumberPattern.test(tag) || semverPattern.test(tag);
+
   const { data } = await octokit.request(
     "POST /repos/{owner}/{repo}/releases",
     {
       owner,
       repo,
-      tag_name: version.toString(),
+      tag_name: isValidTag ? tag : version.toString(),
       generate_release_notes: true,
       target_commitish: process.env.GITHUB_SHA,
     },
   );
 
   if (core.getInput("SLACK_BOT_TOKEN"))
-    await sendSlackReleaseNotes(version.toString(), data);
+    await sendSlackReleaseNotes(isValidTag ? tag : version.toString(), data);
 
-  core.setOutput("version", version.toString());
+  core.setOutput("version", isValidTag ? tag : version.toString());
 }
 
 async function run() {

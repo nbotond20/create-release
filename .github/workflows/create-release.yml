@@ -1,4 +1,9 @@
 on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Tag"
+        required: true
   push:
     branches:
       - main
