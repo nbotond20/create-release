@@ -7,6 +7,8 @@ on:
         description: "Tag"
         required: true
   push:
+    paths-ignore:
+      - "**/**.md"
     branches:
       - main
 
