@@ -53163,6 +53163,8 @@ async function run() {
     console.log(`Found previous version with valid name: ${lastVersion[0]}`);
 
     if (useSemVer) {
+      nextVersion.major = parseInt(lastVersion[1], 10);
+      nextVersion.minor = parseInt(lastVersion[2], 10);
       nextVersion.patch = parseInt(lastVersion[3], 10) + 1;
     } else {
       nextVersion.revision =
