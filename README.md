@@ -18,6 +18,7 @@ For this to work you'll need to create a Slack app and add it to your workspace.
 - `hide-full-change-log-link`: Hide full changelog link in release notes
 - `hide-title`: Hide title in release notes
 - `add-divider`: Add divider in release notes
+- `merge-items`: Merge auto generated items in release notes. If you have a custom `release.yml` file and you provide a category which name includes one of the following words (`automated`,`automation`,`automatization`,`bot`,`script`,`generated`), the duplicated items will be merge to make the release note more readable.
 - `channel`: Channel to publish to
 - `repost-channels`: Channels to repost to (`;` separated)
 
@@ -70,6 +71,9 @@ changelog:
       labels:
         - Semver-Minor
         - enhancement
+    - title: Automated Fixes 🤖
+      labels:
+        - automation
     - title: Other Changes
       labels:
         - "*"
