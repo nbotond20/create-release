@@ -4,21 +4,21 @@ This action creates a release in GitHub. If a slack bot token is provided, it wi
 
 ## Inputs
 
-- `use-sem-ver` (DEFAULT: `false`): Use semantic versioning. The default versioning is a `YYMM.revision` format (e.g. `2312.3` -> 2023. December 3rd release).
-- `tag` (DEFAULT: Generated based on previous tags): Tag to use for the release. If you want to use a custom tag, you can provide it here.
+- `use-sem-ver`: (default: `false`) Use semantic versioning. The default versioning is a `YYMM.revision` format (e.g. `2312.3` -> 2023. December 3rd release).
+- `tag`: (default: Generated based on previous tags) Tag to use for the release. If you want to use a custom tag, you can provide it here.
 
 ### Slack inputs
 
 For this to work you'll need to create a Slack app and add it to your workspace. You'll also need to enable `Incoming Webhooks` for your app. You can find more information about this [here](https://api.slack.com/authentication/basics).
 
 - `SLACK_BOT_TOKEN`: Slack bot token
-- `title` (DEFAULT: The github release title): Title of the release (You can use the `$release_name` variable to include the release name)
-- `hide-authors` (DEFAULT: `false`): Hide authors in release notes
-- `hide-prs` (DEFAULT: `false`): Hide PRs in release notes
-- `hide-full-change-log-link` (DEFAULT: `false`): Hide full changelog link in release notes
-- `hide-title` (DEFAULT: `false`): Hide title in release notes
-- `add-divider` (DEFAULT: `false`): Add divider in release notes
-- `merge-items` (DEFAULT: `false`): Merge auto generated items in release notes. If you have a custom `release.yml` file and you provide a category which name includes one of the following words (`automated`, `automation`, `automatization`, `bot`, `script`, `generated`), the duplicated items will be merge to make the release note more readable.
+- `title`: (default: The github release title) Title of the release (You can use the `$release_name` variable to include the release name)
+- `hide-authors`: (default: `false`) Hide authors in release notes
+- `hide-prs`: (default: `false`) Hide PRs in release notes
+- `hide-full-change-log-link` (default: `false`): Hide full changelog link in release notes
+- `hide-title`: (default: `false`) Hide title in release notes
+- `add-divider`: (default: `false`) Add divider in release notes
+- `merge-items`: (default: `false`) Merge auto generated items in release notes. If you have a custom `release.yml` file and you provide a category which name includes one of the following words (`automated`, `automation`, `automatization`, `bot`, `script`, `generated`), the duplicated items will be merge to make the release note more readable.
 - `channel`: Channel to publish to
 - `repost-channels`: Channels to repost to (`;` separated)
 
