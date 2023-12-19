@@ -24,6 +24,8 @@ inputs:
     description: "Use semantic versioning"
   tag:
     description: "Tag to use for the release"
+  merge-items:
+    description: "Merge auto-generated items into one item"
 
 outputs:
   version:

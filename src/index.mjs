@@ -134,11 +134,77 @@ async function sendSlackReleaseNotes(data) {
       ]
     : [];
 
-  // Create blocks from sections
-  const sectionArray = isSectioned
+  let sectionArray = isSectioned
     ? sections.split("<section-title>").slice(1)
     : [sections]; // Split into sections and remove the first empty section
-  const sectionBlocks = sectionArray
+
+  const MERGE_ITEMS = getBooleanInput("merge-items", false);
+  const AUTOMATION_KEYWORDS = [
+    "automated",
+    "automation",
+    "automatization",
+    "bot",
+    "script",
+    "generated",
+  ];
+  const AUTOMATION_SECTION_REGEX = new RegExp(
+    `.*\\*.*(${AUTOMATION_KEYWORDS.join("|")}.*).*\\*.*`,
+    "i",
+  );
+
+  let automatedSections;
+  if (MERGE_ITEMS) {
+    automatedSections = sectionArray
+      .filter((section) => AUTOMATION_SECTION_REGEX.test(section))
+      .map((section) => {
+        const items = section.split("\n");
+        const title = items[0];
+        let changes = items.splice(2);
+
+        // Split the items into 3 groups: title, author, pr link
+        changes = changes.map((change) =>
+          change.split(/ by | in /).filter((item) => !item.includes("|@")),
+        );
+        // Create a map with the title as key and the links as values
+        changes = changes.reduce((acc, curr) => {
+          const title = curr[0];
+          const prLink = curr[1];
+
+          if (!acc[title]) {
+            acc[title] = [];
+          }
+
+          if (prLink) {
+            acc[title].push(prLink);
+          }
+
+          return acc;
+        }, {});
+
+        // Merge the links into a single string
+        changes = Object.entries(changes).map(([title, links]) => {
+          const linkString = links.join(", ");
+          return `${title}${linkString ? ` in ${linkString}` : ""}`;
+        });
+
+        // Join the items back together
+        changes = changes.join("\n");
+        // Add the title back
+        changes = `${title}\n\n${changes}`;
+
+        return changes;
+      });
+  }
+
+  const sectionsWithoutAutomation = sectionArray.filter(
+    (section) => !AUTOMATION_SECTION_REGEX.test(section),
+  );
+
+  // Create blocks from sections
+  const sectionBlocks = [
+    ...((MERGE_ITEMS ? sectionsWithoutAutomation : sectionArray) ?? []),
+    ...(automatedSections ?? []),
+  ]
     .filter((section) => section !== "") // Remove empty sections
     .map((section) => {
       return {
