@@ -278,6 +278,7 @@ async function sendSlackReleaseNotes(data) {
 
   const slackPayload = {
     channel: input.channel,
+    text: title,
     blocks: [
       ...headerBlock,
       ...sectionBlocks.flat(),
