@@ -6,11 +6,12 @@ on:
       tag:
         description: "Tag"
         required: true
-  push:
-    paths-ignore:
-      - "**/**.md"
-    branches:
-      - main
+  # push:
+  #   paths-ignore:
+  #     - "**/**.md"
+  #     - "**/**.yml"
+  #   branches:
+  #     - main
 
 env:
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
