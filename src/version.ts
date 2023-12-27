@@ -12,9 +12,6 @@ export class Version {
     return `${this.year}${this.month}`;
   }
 
-  /**
-   * @param {number} value
-   */
   set revision(value: number) {
     this._revision = value;
   }
