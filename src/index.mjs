@@ -73,7 +73,8 @@ async function sendSlackReleaseNotes(data) {
       .replace(fullChangelogLink, "") // Remove the changelog from the body
       .trim() // Remove leading and trailing newlines
       .replace(/## What's Changed\n/g, "") // Remove ## title
-      .replaceAll("*", "•"); // Replace * with •
+      .replaceAll("*", "•") // Replace * with •
+      .replaceAll(/<!--[\s\S]*?-->/g, ""); // Remove comments
   }
 
   if (input.hideAuthors) {
