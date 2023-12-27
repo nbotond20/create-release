@@ -51528,9 +51528,6 @@ class Version {
     get datePart() {
         return `${this.year}${this.month}`;
     }
-    /**
-     * @param {number} value
-     */
     set revision(value) {
         this._revision = value;
     }
