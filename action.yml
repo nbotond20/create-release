@@ -6,14 +6,19 @@ inputs:
     description: "Title of the release"
   hide-authors:
     description: "Hide authors in release notes"
+    default: "false"
   hide-prs:
     description: "Hide PRs in release notes"
+    default: "false"
   hide-full-change-log-link:
     description: "Hide full changelog link in release notes"
+    default: "false"
   hide-title:
     description: "Hide title in release notes"
+    default: "false"
   add-divider:
     description: "Add divider in release notes"
+    default: "false"
   channel:
     description: "Channel to publish to"
   repost-channels:
@@ -22,10 +27,12 @@ inputs:
     description: "Slack bot token"
   use-sem-ver:
     description: "Use semantic versioning"
+    default: "false"
   tag:
     description: "Tag to use for the release"
   merge-items:
     description: "Merge auto-generated items into one item"
+    default: "false"
 
 outputs:
   version:
