@@ -1,9 +1,7 @@
 export class SemanticVersion {
-  /**
-   * @param {number} major
-   * @param {number} minor
-   * @param {number} patch
-   */
+  major: number;
+  minor: number;
+  patch: number;
 
   constructor(major = 1, minor = 0, patch = 0) {
     this.major = major;

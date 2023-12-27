@@ -1,14 +1,14 @@
-import { Version } from "./version.mjs";
 import core from "@actions/core";
 import { Octokit } from "@octokit/action";
-import { SemanticVersion } from "./semantic-version.mjs";
-import { sendSlackReleaseNotes } from "./send-slack-release-notes.mjs";
+import { Version } from "./version";
+import { SemanticVersion } from "./semantic-version";
+import { Data, sendSlackReleaseNotes } from "./send-slack-release-notes.js";
 
 const versionNumberPattern = /^v(\d{4})\.(\d+)$/;
 const semverPattern = /^v(\d+)\.(\d+)\.(\d+)$/;
 
 const octokit = new Octokit();
-const [owner, repo] = process.env.GITHUB_REPOSITORY.split("/");
+const [owner, repo] = process.env.GITHUB_REPOSITORY!.split("/");
 
 const config = {
   title: core.getInput("title"),
@@ -23,7 +23,7 @@ const config = {
   SLACK_BOT_TOKEN: core.getInput("SLACK_BOT_TOKEN"),
 };
 
-async function createRelease(version) {
+async function createRelease(version: Version | SemanticVersion) {
   console.log(`Using ${version} as the next version`);
 
   if (!process.env.GITHUB_TOKEN) {
@@ -49,7 +49,7 @@ async function createRelease(version) {
   );
 
   if (core.getInput("SLACK_BOT_TOKEN"))
-    await sendSlackReleaseNotes(data, config);
+    await sendSlackReleaseNotes(data as Data, config);
 
   core.setOutput("version", isValidTag ? tag : version.toString());
 }
@@ -62,13 +62,17 @@ async function run() {
       { owner, repo },
     );
     release = response.data;
-  } catch (err) {
+  } catch (err: any) {
     if (err.message !== "Not Found") {
       throw err;
     }
   }
 
   const useSemVer = core.getInput("use-sem-ver") === "true";
+
+  const nextVersion = useSemVer
+    ? new SemanticVersion()
+    : new Version(new Date());
 
   if (!release) {
     console.log("No previous release found.");
@@ -77,23 +81,19 @@ async function run() {
   }
 
   const lastVersion = useSemVer
-    ? semverPattern.exec(release.name)
-    : versionNumberPattern.exec(release.name);
-
-  const nextVersion = useSemVer
-    ? new SemanticVersion()
-    : new Version(new Date());
+    ? semverPattern.exec(release.name!)
+    : versionNumberPattern.exec(release.name!);
 
   if (lastVersion) {
     console.log(`Found previous version with valid name: ${lastVersion[0]}`);
 
     if (useSemVer) {
-      nextVersion.major = parseInt(lastVersion[1], 10);
-      nextVersion.minor = parseInt(lastVersion[2], 10);
-      nextVersion.patch = parseInt(lastVersion[3], 10) + 1;
+      (nextVersion as SemanticVersion).major = parseInt(lastVersion[1], 10);
+      (nextVersion as SemanticVersion).minor = parseInt(lastVersion[2], 10);
+      (nextVersion as SemanticVersion).patch = parseInt(lastVersion[3], 10) + 1;
     } else {
-      nextVersion.revision =
-        lastVersion[1] === nextVersion.datePart
+      (nextVersion as Version).revision =
+        lastVersion[1] === (nextVersion as Version).datePart
           ? parseInt(lastVersion[2], 10) + 1
           : 1;
     }

@@ -1,0 +1,18 @@
+{
+  "compilerOptions": {
+    "baseUrl": "./",
+    "outDir": "./dist",
+    "module": "commonjs",
+    "target": "ESNext",
+    "skipLibCheck": true,
+    "alwaysStrict": true,
+    "strict": true,
+    "preserveConstEnums": true,
+    "moduleResolution": "node",
+    "sourceMap": true,
+    "esModuleInterop": true,
+    "typeRoots": ["types"],
+    "resolveJsonModule": true
+  },
+  "include": ["src/**/*"]
+}

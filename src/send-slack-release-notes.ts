@@ -1,9 +1,27 @@
-export async function sendSlackReleaseNotes(data, config) {
+type SlackConfig = {
+  channel: string;
+  SLACK_BOT_TOKEN: string;
+  title?: string;
+  hideTitle?: boolean;
+  hideAuthors?: boolean;
+  hidePRs?: boolean;
+  hideFullChangeLogLink?: boolean;
+  addDivider?: boolean;
+  mergeItems?: boolean;
+  repostChannels?: string;
+};
+
+export type Data = {
+  body: string;
+  name: string;
+};
+
+export async function sendSlackReleaseNotes(data: Data, config: SlackConfig) {
   if (!config.channel) {
     throw new Error("Channel is not set");
   }
 
-  const createSlackLinkFromPRLink = (prLink) => {
+  const createSlackLinkFromPRLink = (prLink: string) => {
     const prNumber = prLink.split("/").pop();
     return `<${prLink}|#${prNumber}>`;
   };
@@ -16,10 +34,10 @@ export async function sendSlackReleaseNotes(data, config) {
     : data.name;
 
   // Get full changelog link
-  const fullChangelogLink = body.split("\n\n\n").pop().trim();
+  const fullChangelogLink = body.split("\n\n\n")!.pop()!.trim();
 
   // Get sections
-  let sections;
+  let sections: string;
   const isSectioned = body.includes("### ");
   // This is a check to see if the changelog is in a sectioned format (uses release.yml) or not
   if (isSectioned) {
@@ -128,40 +146,40 @@ export async function sendSlackReleaseNotes(data, config) {
       .map((section) => {
         const items = section.split("\n");
         const title = items[0];
-        let changes = items.splice(2);
+        const changes = items.splice(2);
 
         // Split the items into 3 groups: title, author, pr link
-        changes = changes.map((change) =>
+        const typeGroups = changes.map((change) =>
           change.split(/ by | in /).filter((item) => !item.includes("|@")),
         );
         // Create a map with the title as key and the links as values
-        changes = changes.reduce((acc, curr) => {
-          const title = curr[0];
-          const prLink = curr[1];
+        const titleLinkMap = typeGroups.reduce(
+          (acc, curr) => {
+            const title = curr[0];
+            const prLink = curr[1];
 
-          if (!acc[title]) {
-            acc[title] = [];
-          }
+            if (!acc[title]) {
+              acc[title] = [];
+            }
 
-          if (prLink) {
-            acc[title].push(prLink);
-          }
+            if (prLink) {
+              acc[title].push(prLink);
+            }
 
-          return acc;
-        }, {});
+            return acc;
+          },
+          {} as Record<string, string[]>,
+        );
 
         // Merge the links into a single string
-        changes = Object.entries(changes).map(([title, links]) => {
-          const linkString = links.join(", ");
-          return `${title}${linkString ? ` in ${linkString}` : ""}`;
-        });
+        const linksString = Object.entries(titleLinkMap)
+          .map(([title, links]) => {
+            const linkString = links.join(", ");
+            return `${title}${linkString ? ` in ${linkString}` : ""}`;
+          })
+          .join("\n");
 
-        // Join the items back together
-        changes = changes.join("\n");
-        // Add the title back
-        changes = `${title}\n\n${changes}`;
-
-        return changes;
+        return `${title}\n\n${linksString}`;
       });
   }
 
@@ -272,9 +290,5 @@ export async function sendSlackReleaseNotes(data, config) {
 
   if (!slackAPIResponse.ok) {
     throw new Error("Error sending slack message");
-  }
-
-  if (slackAPIResponse.warning) {
-    throw new Error(`Slack error: ${slackAPIResponse.warning}`);
   }
 }

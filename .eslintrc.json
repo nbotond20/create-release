@@ -1,19 +1,25 @@
 {
   "root": true,
-  "parserOptions": {
-    "ecmaVersion": 2020,
-    "sourceType": "module",
-    "ecmaFeatures": {}
-  },
   "env": {
-    "node": true
+    "node": true,
+    "es6": true
   },
-  "plugins": [],
+  "parser": "@typescript-eslint/parser",
   "extends": [
     "eslint:recommended",
     "plugin:@typescript-eslint/recommended",
     "plugin:prettier/recommended",
     "prettier"
   ],
-  "overrides": []
+  "rules": {
+    "no-console": 1
+  },
+  "overrides": [
+    {
+      "files": ["*.ts"],
+      "rules": {
+        "@typescript-eslint/no-unused-vars": "warn"
+      }
+    }
+  ]
 }
