@@ -3,7 +3,7 @@
     "baseUrl": "./",
     "outDir": "./dist",
     "module": "commonjs",
-    "target": "ESNext",
+    "target": "es2015",
     "skipLibCheck": true,
     "alwaysStrict": true,
     "strict": true,
@@ -12,7 +12,8 @@
     "sourceMap": true,
     "esModuleInterop": true,
     "typeRoots": ["types"],
-    "resolveJsonModule": true
+    "resolveJsonModule": true,
+    "lib": ["ES2021.String"]
   },
   "include": ["src/**/*"]
 }

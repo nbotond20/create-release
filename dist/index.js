@@ -51145,6 +51145,15 @@ function wrappy (fn, cb) {
 
 "use strict";
 
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
@@ -51170,68 +51179,72 @@ const config = {
     repostChannels: core_1.default.getInput("repost-channels"),
     SLACK_BOT_TOKEN: core_1.default.getInput("SLACK_BOT_TOKEN"),
 };
-async function createRelease(version) {
-    console.log(`Using ${version} as the next version`);
-    if (!process.env.GITHUB_TOKEN) {
-        throw new Error("GITHUB_TOKEN is not set");
-    }
-    if (!owner || !repo) {
-        throw new Error("GITHUB_REPOSITORY is not set");
-    }
-    const tag = core_1.default.getInput("tag");
-    const isValidTag = versionNumberPattern.test(tag) || semverPattern.test(tag);
-    const { data } = await octokit.request("POST /repos/{owner}/{repo}/releases", {
-        owner,
-        repo,
-        tag_name: isValidTag ? tag : version.toString(),
-        generate_release_notes: true,
-        target_commitish: process.env.GITHUB_SHA,
-    });
-    if (core_1.default.getInput("SLACK_BOT_TOKEN"))
-        await (0, send_slack_release_notes_js_1.sendSlackReleaseNotes)(data, config);
-    core_1.default.setOutput("version", isValidTag ? tag : version.toString());
-}
-async function run() {
-    let release;
-    try {
-        const response = await octokit.request("GET /repos/{owner}/{repo}/releases/latest", { owner, repo });
-        release = response.data;
-    }
-    catch (err) {
-        if (err.message !== "Not Found") {
-            throw err;
+function createRelease(version) {
+    return __awaiter(this, void 0, void 0, function* () {
+        console.log(`Using ${version} as the next version`);
+        if (!process.env.GITHUB_TOKEN) {
+            throw new Error("GITHUB_TOKEN is not set");
         }
-    }
-    const useSemVer = core_1.default.getInput("use-sem-ver") === "true";
-    const nextVersion = useSemVer
-        ? new semantic_version_1.SemanticVersion()
-        : new version_1.Version(new Date());
-    if (!release) {
-        console.log("No previous release found.");
-        await createRelease(nextVersion);
-        return;
-    }
-    const lastVersion = useSemVer
-        ? semverPattern.exec(release.name)
-        : versionNumberPattern.exec(release.name);
-    if (lastVersion) {
-        console.log(`Found previous version with valid name: ${lastVersion[0]}`);
-        if (useSemVer) {
-            nextVersion.major = parseInt(lastVersion[1], 10);
-            nextVersion.minor = parseInt(lastVersion[2], 10);
-            nextVersion.patch = parseInt(lastVersion[3], 10) + 1;
+        if (!owner || !repo) {
+            throw new Error("GITHUB_REPOSITORY is not set");
+        }
+        const tag = core_1.default.getInput("tag");
+        const isValidTag = versionNumberPattern.test(tag) || semverPattern.test(tag);
+        const { data } = yield octokit.request("POST /repos/{owner}/{repo}/releases", {
+            owner,
+            repo,
+            tag_name: isValidTag ? tag : version.toString(),
+            generate_release_notes: true,
+            target_commitish: process.env.GITHUB_SHA,
+        });
+        if (core_1.default.getInput("SLACK_BOT_TOKEN"))
+            yield (0, send_slack_release_notes_js_1.sendSlackReleaseNotes)(data, config);
+        core_1.default.setOutput("version", isValidTag ? tag : version.toString());
+    });
+}
+function run() {
+    return __awaiter(this, void 0, void 0, function* () {
+        let release;
+        try {
+            const response = yield octokit.request("GET /repos/{owner}/{repo}/releases/latest", { owner, repo });
+            release = response.data;
+        }
+        catch (err) {
+            if (err.message !== "Not Found") {
+                throw err;
+            }
+        }
+        const useSemVer = core_1.default.getInput("use-sem-ver") === "true";
+        const nextVersion = useSemVer
+            ? new semantic_version_1.SemanticVersion()
+            : new version_1.Version(new Date());
+        if (!release) {
+            console.log("No previous release found.");
+            yield createRelease(nextVersion);
+            return;
+        }
+        const lastVersion = useSemVer
+            ? semverPattern.exec(release.name)
+            : versionNumberPattern.exec(release.name);
+        if (lastVersion) {
+            console.log(`Found previous version with valid name: ${lastVersion[0]}`);
+            if (useSemVer) {
+                nextVersion.major = parseInt(lastVersion[1], 10);
+                nextVersion.minor = parseInt(lastVersion[2], 10);
+                nextVersion.patch = parseInt(lastVersion[3], 10) + 1;
+            }
+            else {
+                nextVersion.revision =
+                    lastVersion[1] === nextVersion.datePart
+                        ? parseInt(lastVersion[2], 10) + 1
+                        : 1;
+            }
         }
         else {
-            nextVersion.revision =
-                lastVersion[1] === nextVersion.datePart
-                    ? parseInt(lastVersion[2], 10) + 1
-                    : 1;
+            console.warn("Last version number does not match the pattern");
         }
-    }
-    else {
-        console.warn("Last version number does not match the pattern");
-    }
-    await createRelease(nextVersion);
+        yield createRelease(nextVersion);
+    });
 }
 run()
     .then(() => {
@@ -51252,9 +51265,6 @@ run()
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.SemanticVersion = void 0;
 class SemanticVersion {
-    major;
-    minor;
-    patch;
     constructor(major = 1, minor = 0, patch = 0) {
         this.major = major;
         this.minor = minor;
@@ -51270,240 +51280,249 @@ exports.SemanticVersion = SemanticVersion;
 /***/ }),
 
 /***/ 8688:
-/***/ ((__unused_webpack_module, exports) => {
+/***/ (function(__unused_webpack_module, exports) {
 
 "use strict";
 
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.sendSlackReleaseNotes = void 0;
-async function sendSlackReleaseNotes(data, config) {
-    if (!config.channel) {
-        throw new Error("Channel is not set");
-    }
-    const createSlackLinkFromPRLink = (prLink) => {
-        const prNumber = prLink.split("/").pop();
-        return `<${prLink}|#${prNumber}>`;
-    };
-    let body = data.body;
-    // Get title (replace $release_name with the version number if needed)
-    const title = config.title
-        ? config.title.replace("$release_name", data.name)
-        : data.name;
-    // Get full changelog link
-    const fullChangelogLink = body.split("\n\n\n").pop().trim();
-    // Get sections
-    let sections;
-    const isSectioned = body.includes("### ");
-    // This is a check to see if the changelog is in a sectioned format (uses release.yml) or not
-    if (isSectioned) {
-        sections = body
-            .replace(fullChangelogLink, "") // Remove the changelog from the body
-            .trim() // Remove leading and trailing newlines
-            .split("### ") // Split into sections
-            .slice(1) // Remove the first empty section
-            .join("")
-            .split("\n")
-            .map((line) => line.includes("*")
-            ? line.replace("*", "•")
-            : `<section-title>*${line}*\n`) // Replace * with • and wrap section titles in *
-            .join("\n");
-    }
-    else {
-        sections = body
-            .replace(fullChangelogLink, "") // Remove the changelog from the body
-            .trim() // Remove leading and trailing newlines
-            .replace(/## What's Changed\n/g, "") // Remove ## title
-            .replaceAll("*", "•") // Replace * with •
-            .replaceAll(/<!--[\s\S]*?-->/g, ""); // Remove comments
-    }
-    if (config.hideAuthors) {
-        // Remove authors from sections
-        sections = sections.replaceAll(/ by @\w+/g, "");
-    }
-    else {
-        // Replace github tags with slack links (format: <link|text>)
-        const githubTags = sections.match(/@([^ ]+)/g);
-        Array.from(new Set(githubTags))?.forEach((tag) => {
-            sections = sections.replaceAll(tag, `<https://github.com/${tag.replace("@", "")}|${tag}>`);
-        });
-    }
-    if (config.hidePRs) {
-        // Remove pull request links from sections
-        sections = sections.replaceAll(/ in https:\/\/github\.com\/[^\s]+\/pull\/\d+/g, "");
-    }
-    else {
-        // Replace pull request links with slack links (format: <link|text>)
-        const pullRequestLinks = sections.match(/https:\/\/github\.com\/[^\s]+\/pull\/\d+/g);
-        Array.from(new Set(pullRequestLinks))?.forEach((prLink) => {
-            sections = sections.replaceAll(prLink, createSlackLinkFromPRLink(prLink));
-        });
-    }
-    // Create header block
-    const headerBlock = !config.hideTitle
-        ? [
-            {
-                text: {
-                    emoji: true,
-                    text: title,
-                    type: "plain_text",
-                },
-                type: "header",
-            },
-        ]
-        : [];
-    // Create changelog block
-    const changelogLinkBlock = !config.hideFullChangeLogLink
-        ? [
-            {
-                type: "context",
-                elements: [
-                    {
-                        text: fullChangelogLink.replaceAll("**", "*"),
-                        type: "mrkdwn",
-                    },
-                ],
-            },
-        ]
-        : [];
-    let sectionArray = isSectioned
-        ? sections.split("<section-title>").slice(1)
-        : [sections]; // Split into sections and remove the first empty section
-    const AUTOMATION_KEYWORDS = [
-        "automated",
-        "automation",
-        "automatization",
-        "bot",
-        "script",
-        "generated",
-    ];
-    const AUTOMATION_SECTION_REGEX = new RegExp(`.*\\*.*(${AUTOMATION_KEYWORDS.join("|")}.*).*\\*.*`, "i");
-    let automatedSections;
-    if (config.mergeItems) {
-        automatedSections = sectionArray
-            .filter((section) => AUTOMATION_SECTION_REGEX.test(section))
-            .map((section) => {
-            const items = section.split("\n");
-            const title = items[0];
-            const changes = items.splice(2);
-            // Split the items into 3 groups: title, author, pr link
-            const typeGroups = changes.map((change) => change.split(/ by | in /).filter((item) => !item.includes("|@")));
-            // Create a map with the title as key and the links as values
-            const titleLinkMap = typeGroups.reduce((acc, curr) => {
-                const title = curr[0];
-                const prLink = curr[1];
-                if (!acc[title]) {
-                    acc[title] = [];
-                }
-                if (prLink) {
-                    acc[title].push(prLink);
-                }
-                return acc;
-            }, {});
-            // Merge the links into a single string
-            const linksString = Object.entries(titleLinkMap)
-                .map(([title, links]) => {
-                const linkString = links.join(", ");
-                return `${title}${linkString ? ` in ${linkString}` : ""}`;
-            })
-                .join("\n");
-            return `${title}\n\n${linksString}`;
-        });
-    }
-    const sectionsWithoutAutomation = sectionArray.filter((section) => !AUTOMATION_SECTION_REGEX.test(section));
-    // Create blocks from sections
-    const sectionBlocks = [
-        ...((config.mergeItems ? sectionsWithoutAutomation : sectionArray) ?? []),
-        ...(automatedSections ?? []),
-    ]
-        .filter((section) => section !== "") // Remove empty sections
-        .map((section) => {
-        return {
-            text: {
-                text: section,
-                type: "mrkdwn",
-            },
-            type: "section",
+function sendSlackReleaseNotes(data, config) {
+    var _a, _b, _c, _d;
+    return __awaiter(this, void 0, void 0, function* () {
+        if (!config.channel) {
+            throw new Error("Channel is not set");
+        }
+        const createSlackLinkFromPRLink = (prLink) => {
+            const prNumber = prLink.split("/").pop();
+            return `<${prLink}|#${prNumber}>`;
         };
-    })
-        .map((section, idx) => idx < sectionArray.length - 1 && config.addDivider
-        ? [section, { type: "divider" }]
-        : [section]);
-    // Create action block
-    const repostChannels = config.repostChannels
-        ?.split(";")
-        .map((channel) => `#${channel}`)
-        .join(", ");
-    console.log(repostChannels);
-    console.log(config.repostChannels);
-    const actionBlock = config.repostChannels
-        ? [
-            {
-                type: "actions",
-                elements: [
-                    {
-                        type: "button",
-                        text: {
-                            type: "plain_text",
-                            emoji: true,
-                            text: "Approve",
+        let body = data.body;
+        // Get title (replace $release_name with the version number if needed)
+        const title = config.title
+            ? config.title.replace("$release_name", data.name)
+            : data.name;
+        // Get full changelog link
+        const fullChangelogLink = body.split("\n\n\n").pop().trim();
+        // Get sections
+        let sections;
+        const isSectioned = body.includes("### ");
+        // This is a check to see if the changelog is in a sectioned format (uses release.yml) or not
+        if (isSectioned) {
+            sections = body
+                .replace(fullChangelogLink, "") // Remove the changelog from the body
+                .trim() // Remove leading and trailing newlines
+                .split("### ") // Split into sections
+                .slice(1) // Remove the first empty section
+                .join("")
+                .split("\n")
+                .map((line) => line.includes("*")
+                ? line.replace("*", "•")
+                : `<section-title>*${line}*\n`) // Replace * with • and wrap section titles in *
+                .join("\n");
+        }
+        else {
+            sections = body
+                .replace(fullChangelogLink, "") // Remove the changelog from the body
+                .trim() // Remove leading and trailing newlines
+                .replace(/## What's Changed\n/g, "") // Remove ## title
+                .replaceAll("*", "•") // Replace * with •
+                .replaceAll(/<!--[\s\S]*?-->/g, ""); // Remove comments
+        }
+        if (config.hideAuthors) {
+            // Remove authors from sections
+            sections = sections.replaceAll(/ by @\w+/g, "");
+        }
+        else {
+            // Replace github tags with slack links (format: <link|text>)
+            const githubTags = sections.match(/@([^ ]+)/g);
+            (_a = Array.from(new Set(githubTags))) === null || _a === void 0 ? void 0 : _a.forEach((tag) => {
+                sections = sections.replaceAll(tag, `<https://github.com/${tag.replace("@", "")}|${tag}>`);
+            });
+        }
+        if (config.hidePRs) {
+            // Remove pull request links from sections
+            sections = sections.replaceAll(/ in https:\/\/github\.com\/[^\s]+\/pull\/\d+/g, "");
+        }
+        else {
+            // Replace pull request links with slack links (format: <link|text>)
+            const pullRequestLinks = sections.match(/https:\/\/github\.com\/[^\s]+\/pull\/\d+/g);
+            (_b = Array.from(new Set(pullRequestLinks))) === null || _b === void 0 ? void 0 : _b.forEach((prLink) => {
+                sections = sections.replaceAll(prLink, createSlackLinkFromPRLink(prLink));
+            });
+        }
+        // Create header block
+        const headerBlock = !config.hideTitle
+            ? [
+                {
+                    text: {
+                        emoji: true,
+                        text: title,
+                        type: "plain_text",
+                    },
+                    type: "header",
+                },
+            ]
+            : [];
+        // Create changelog block
+        const changelogLinkBlock = !config.hideFullChangeLogLink
+            ? [
+                {
+                    type: "context",
+                    elements: [
+                        {
+                            text: fullChangelogLink.replaceAll("**", "*"),
+                            type: "mrkdwn",
                         },
-                        style: "primary",
-                        value: config.repostChannels,
-                        action_id: "approve_release_notes",
-                        confirm: {
-                            title: {
-                                type: "plain_text",
-                                text: "Are you sure?",
-                            },
+                    ],
+                },
+            ]
+            : [];
+        let sectionArray = isSectioned
+            ? sections.split("<section-title>").slice(1)
+            : [sections]; // Split into sections and remove the first empty section
+        const AUTOMATION_KEYWORDS = [
+            "automated",
+            "automation",
+            "automatization",
+            "bot",
+            "script",
+            "generated",
+        ];
+        const AUTOMATION_SECTION_REGEX = new RegExp(`.*\\*.*(${AUTOMATION_KEYWORDS.join("|")}.*).*\\*.*`, "i");
+        let automatedSections;
+        if (config.mergeItems) {
+            automatedSections = sectionArray
+                .filter((section) => AUTOMATION_SECTION_REGEX.test(section))
+                .map((section) => {
+                const items = section.split("\n");
+                const title = items[0];
+                const changes = items.splice(2);
+                // Split the items into 3 groups: title, author, pr link
+                const typeGroups = changes.map((change) => change.split(/ by | in /).filter((item) => !item.includes("|@")));
+                // Create a map with the title as key and the links as values
+                const titleLinkMap = typeGroups.reduce((acc, curr) => {
+                    const title = curr[0];
+                    const prLink = curr[1];
+                    if (!acc[title]) {
+                        acc[title] = [];
+                    }
+                    if (prLink) {
+                        acc[title].push(prLink);
+                    }
+                    return acc;
+                }, {});
+                // Merge the links into a single string
+                const linksString = Object.entries(titleLinkMap)
+                    .map(([title, links]) => {
+                    const linkString = links.join(", ");
+                    return `${title}${linkString ? ` in ${linkString}` : ""}`;
+                })
+                    .join("\n");
+                return `${title}\n\n${linksString}`;
+            });
+        }
+        const sectionsWithoutAutomation = sectionArray.filter((section) => !AUTOMATION_SECTION_REGEX.test(section));
+        // Create blocks from sections
+        const sectionBlocks = [
+            ...((_c = (config.mergeItems ? sectionsWithoutAutomation : sectionArray)) !== null && _c !== void 0 ? _c : []),
+            ...(automatedSections !== null && automatedSections !== void 0 ? automatedSections : []),
+        ]
+            .filter((section) => section !== "") // Remove empty sections
+            .map((section) => {
+            return {
+                text: {
+                    text: section,
+                    type: "mrkdwn",
+                },
+                type: "section",
+            };
+        })
+            .map((section, idx) => idx < sectionArray.length - 1 && config.addDivider
+            ? [section, { type: "divider" }]
+            : [section]);
+        // Create action block
+        const repostChannels = (_d = config.repostChannels) === null || _d === void 0 ? void 0 : _d.split(";").map((channel) => `#${channel}`).join(", ");
+        console.log(repostChannels);
+        console.log(config.repostChannels);
+        const actionBlock = config.repostChannels
+            ? [
+                {
+                    type: "actions",
+                    elements: [
+                        {
+                            type: "button",
                             text: {
                                 type: "plain_text",
-                                text: `By approving this release note, you will post it to the following channel(s): ${repostChannels}`,
-                            },
-                            confirm: {
-                                type: "plain_text",
+                                emoji: true,
                                 text: "Approve",
                             },
-                            deny: {
-                                type: "plain_text",
-                                text: "Cancel",
+                            style: "primary",
+                            value: config.repostChannels,
+                            action_id: "approve_release_notes",
+                            confirm: {
+                                title: {
+                                    type: "plain_text",
+                                    text: "Are you sure?",
+                                },
+                                text: {
+                                    type: "plain_text",
+                                    text: `By approving this release note, you will post it to the following channel(s): ${repostChannels}`,
+                                },
+                                confirm: {
+                                    type: "plain_text",
+                                    text: "Approve",
+                                },
+                                deny: {
+                                    type: "plain_text",
+                                    text: "Cancel",
+                                },
                             },
                         },
-                    },
-                    {
-                        type: "button",
-                        text: {
-                            type: "plain_text",
-                            emoji: true,
-                            text: "Cancel",
+                        {
+                            type: "button",
+                            text: {
+                                type: "plain_text",
+                                emoji: true,
+                                text: "Cancel",
+                            },
+                            style: "danger",
+                            action_id: "cancel_release_notes",
                         },
-                        style: "danger",
-                        action_id: "cancel_release_notes",
-                    },
-                ],
+                    ],
+                },
+            ]
+            : [];
+        const slackPayload = {
+            channel: config.channel,
+            text: title,
+            blocks: [
+                ...headerBlock,
+                ...sectionBlocks.flat(),
+                ...changelogLinkBlock,
+                ...actionBlock,
+            ],
+        };
+        const slackAPIResponse = yield fetch("https://slack.com/api/chat.postMessage", {
+            method: "POST",
+            body: JSON.stringify(slackPayload),
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${config.SLACK_BOT_TOKEN}`,
             },
-        ]
-        : [];
-    const slackPayload = {
-        channel: config.channel,
-        text: title,
-        blocks: [
-            ...headerBlock,
-            ...sectionBlocks.flat(),
-            ...changelogLinkBlock,
-            ...actionBlock,
-        ],
-    };
-    const slackAPIResponse = await fetch("https://slack.com/api/chat.postMessage", {
-        method: "POST",
-        body: JSON.stringify(slackPayload),
-        headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${config.SLACK_BOT_TOKEN}`,
-        },
+        });
+        if (!slackAPIResponse.ok) {
+            throw new Error("Error sending slack message");
+        }
     });
-    if (!slackAPIResponse.ok) {
-        throw new Error("Error sending slack message");
-    }
 }
 exports.sendSlackReleaseNotes = sendSlackReleaseNotes;
 
@@ -51518,9 +51537,6 @@ exports.sendSlackReleaseNotes = sendSlackReleaseNotes;
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.Version = void 0;
 class Version {
-    year;
-    month;
-    _revision;
     constructor(date) {
         this.year = date.getFullYear().toString().substring(2);
         this.month = (date.getMonth() + 1).toString().padStart(2, "0");
@@ -51532,7 +51548,8 @@ class Version {
         this._revision = value;
     }
     toString() {
-        return `v${this.datePart}.${this._revision ?? 1}`;
+        var _a;
+        return `v${this.datePart}.${(_a = this._revision) !== null && _a !== void 0 ? _a : 1}`;
     }
 }
 exports.Version = Version;
