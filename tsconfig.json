@@ -2,18 +2,17 @@
   "compilerOptions": {
     "baseUrl": "./",
     "outDir": "./dist",
-    "module": "commonjs",
-    "target": "es2015",
+    "target": "ES2022",
+    "module": "NodeNext",
     "skipLibCheck": true,
     "alwaysStrict": true,
     "strict": true,
     "preserveConstEnums": true,
-    "moduleResolution": "node",
+    "moduleResolution": "NodeNext",
     "sourceMap": true,
     "esModuleInterop": true,
     "typeRoots": ["types"],
-    "resolveJsonModule": true,
-    "lib": ["ES2021.String"]
+    "resolveJsonModule": true
   },
   "include": ["src/**/*"]
 }
