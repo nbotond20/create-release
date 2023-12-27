@@ -25,6 +25,7 @@ async function sendSlackReleaseNotes(data) {
     hideFullChangeLogLink: getBooleanInput("hide-full-change-log-link", false),
     hideTitle: getBooleanInput("hide-title", false),
     addDivider: getBooleanInput("add-divider", false),
+    mergeItems: getBooleanInput("merge-items", false),
     channel: core.getInput("channel"),
     repostChannels: core.getInput("repost-channels"),
     SLACK_BOT_TOKEN: core.getInput("SLACK_BOT_TOKEN"),
@@ -55,7 +56,7 @@ async function sendSlackReleaseNotes(data) {
   // This is a check to see if the changelog is in a sectioned format (uses release.yml) or not
   if (isSectioned) {
     sections = body
-      .replace(`\n\n${fullChangelogLink}`, "") // Remove the changelog from the body
+      .replace(fullChangelogLink, "") // Remove the changelog from the body
       .trim() // Remove leading and trailing newlines
       .split("### ") // Split into sections
       .slice(1) // Remove the first empty section
@@ -69,7 +70,7 @@ async function sendSlackReleaseNotes(data) {
       .join("\n");
   } else {
     sections = body
-      .replace(`${fullChangelogLink}`, "") // Remove the changelog from the body
+      .replace(fullChangelogLink, "") // Remove the changelog from the body
       .trim() // Remove leading and trailing newlines
       .replace(/## What's Changed\n/g, "") // Remove ## title
       .replaceAll("*", "•"); // Replace * with •
@@ -138,7 +139,6 @@ async function sendSlackReleaseNotes(data) {
     ? sections.split("<section-title>").slice(1)
     : [sections]; // Split into sections and remove the first empty section
 
-  const MERGE_ITEMS = getBooleanInput("merge-items", false);
   const AUTOMATION_KEYWORDS = [
     "automated",
     "automation",
@@ -153,7 +153,7 @@ async function sendSlackReleaseNotes(data) {
   );
 
   let automatedSections;
-  if (MERGE_ITEMS) {
+  if (input.mergeItems) {
     automatedSections = sectionArray
       .filter((section) => AUTOMATION_SECTION_REGEX.test(section))
       .map((section) => {
