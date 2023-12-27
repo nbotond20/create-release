@@ -203,7 +203,7 @@ async function sendSlackReleaseNotes(data) {
 
   // Create blocks from sections
   const sectionBlocks = [
-    ...((MERGE_ITEMS ? sectionsWithoutAutomation : sectionArray) ?? []),
+    ...((input.mergeItems ? sectionsWithoutAutomation : sectionArray) ?? []),
     ...(automatedSections ?? []),
   ]
     .filter((section) => section !== "") // Remove empty sections
