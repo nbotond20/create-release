@@ -6245,7 +6245,7 @@ if (util.nodeMajor > 16 || (util.nodeMajor === 16 && util.nodeMinor >= 8)) {
   module.exports.Headers = __nccwpck_require__(73).Headers
   module.exports.Response = __nccwpck_require__(226).Response
   module.exports.Request = __nccwpck_require__(7156).Request
-  module.exports.FormData = __nccwpck_require__(4650).FormData
+  module.exports.FormData = __nccwpck_require__(6638).FormData
   module.exports.File = __nccwpck_require__(6061).File
   module.exports.FileReader = __nccwpck_require__(8233).FileReader
 
@@ -14006,7 +14006,7 @@ const {
   createDeferredPromise,
   fullyReadBody
 } = __nccwpck_require__(184)
-const { FormData } = __nccwpck_require__(4650)
+const { FormData } = __nccwpck_require__(6638)
 const { kState } = __nccwpck_require__(9448)
 const { webidl } = __nccwpck_require__(4024)
 const { DOMException, structuredClone } = __nccwpck_require__(2818)
@@ -15746,7 +15746,7 @@ module.exports = { File, FileLike, isFileLike }
 
 /***/ }),
 
-/***/ 4650:
+/***/ 6638:
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
 
@@ -19791,7 +19791,7 @@ const {
 } = __nccwpck_require__(2818)
 const { kState, kHeaders, kGuard, kRealm } = __nccwpck_require__(9448)
 const { webidl } = __nccwpck_require__(4024)
-const { FormData } = __nccwpck_require__(4650)
+const { FormData } = __nccwpck_require__(6638)
 const { getGlobalOrigin } = __nccwpck_require__(1484)
 const { URLSerializer } = __nccwpck_require__(1945)
 const { kHeadersList, kConstruct } = __nccwpck_require__(596)
@@ -52854,41 +52854,9 @@ class SemanticVersion {
   }
 }
 
-;// CONCATENATED MODULE: ./src/index.mjs
-
-
-
-
-
-const versionNumberPattern = /^v(\d{4})\.(\d+)$/;
-const semverPattern = /^v(\d+)\.(\d+)\.(\d+)$/;
-
-const octokit = new dist_node.Octokit();
-const [owner, repo] = process.env.GITHUB_REPOSITORY.split("/");
-
-function getBooleanInput(name, defaultValue) {
-  const value = core.getInput(name);
-  if (!value) {
-    return defaultValue;
-  }
-  return value === "true";
-}
-
-async function sendSlackReleaseNotes(data) {
-  const input = {
-    title: core.getInput("title"),
-    hideAuthors: getBooleanInput("hide-authors", false),
-    hidePRs: getBooleanInput("hide-prs", false),
-    hideFullChangeLogLink: getBooleanInput("hide-full-change-log-link", false),
-    hideTitle: getBooleanInput("hide-title", false),
-    addDivider: getBooleanInput("add-divider", false),
-    mergeItems: getBooleanInput("merge-items", false),
-    channel: core.getInput("channel"),
-    repostChannels: core.getInput("repost-channels"),
-    SLACK_BOT_TOKEN: core.getInput("SLACK_BOT_TOKEN"),
-  };
-
-  if (!input.channel) {
+;// CONCATENATED MODULE: ./src/send-slack-release-notes.mjs
+async function sendSlackReleaseNotes(data, config) {
+  if (!config.channel) {
     throw new Error("Channel is not set");
   }
 
@@ -52900,8 +52868,8 @@ async function sendSlackReleaseNotes(data) {
   let body = data.body;
 
   // Get title (replace $release_name with the version number if needed)
-  const title = input.title
-    ? input.title.replace("$release_name", data.name)
+  const title = config.title
+    ? config.title.replace("$release_name", data.name)
     : data.name;
 
   // Get full changelog link
@@ -52934,7 +52902,7 @@ async function sendSlackReleaseNotes(data) {
       .replaceAll(/<!--[\s\S]*?-->/g, ""); // Remove comments
   }
 
-  if (input.hideAuthors) {
+  if (config.hideAuthors) {
     // Remove authors from sections
     sections = sections.replaceAll(/ by @\w+/g, "");
   } else {
@@ -52948,7 +52916,7 @@ async function sendSlackReleaseNotes(data) {
     });
   }
 
-  if (input.hidePRs) {
+  if (config.hidePRs) {
     // Remove pull request links from sections
     sections = sections.replaceAll(
       / in https:\/\/github\.com\/[^\s]+\/pull\/\d+/g,
@@ -52965,7 +52933,7 @@ async function sendSlackReleaseNotes(data) {
   }
 
   // Create header block
-  const headerBlock = !input.hideTitle
+  const headerBlock = !config.hideTitle
     ? [
         {
           text: {
@@ -52979,7 +52947,7 @@ async function sendSlackReleaseNotes(data) {
     : [];
 
   // Create changelog block
-  const changelogLinkBlock = !input.hideFullChangeLogLink
+  const changelogLinkBlock = !config.hideFullChangeLogLink
     ? [
         {
           type: "context",
@@ -53011,7 +52979,7 @@ async function sendSlackReleaseNotes(data) {
   );
 
   let automatedSections;
-  if (input.mergeItems) {
+  if (config.mergeItems) {
     automatedSections = sectionArray
       .filter((section) => AUTOMATION_SECTION_REGEX.test(section))
       .map((section) => {
@@ -53060,7 +53028,7 @@ async function sendSlackReleaseNotes(data) {
 
   // Create blocks from sections
   const sectionBlocks = [
-    ...((input.mergeItems ? sectionsWithoutAutomation : sectionArray) ?? []),
+    ...((config.mergeItems ? sectionsWithoutAutomation : sectionArray) ?? []),
     ...(automatedSections ?? []),
   ]
     .filter((section) => section !== "") // Remove empty sections
@@ -53075,17 +53043,19 @@ async function sendSlackReleaseNotes(data) {
     })
     .map(
       (section, idx) =>
-        idx < sectionArray.length - 1 && input.addDivider
+        idx < sectionArray.length - 1 && config.addDivider
           ? [section, { type: "divider" }]
           : [section], // Add dividers between sections
     );
 
   // Create action block
-  const repostChannels = input.repostChannels
-    .split(";")
+  const repostChannels = config.repostChannels
+    ?.split(";")
     .map((channel) => `#${channel}`)
     .join(", ");
-  const actionBlock = input.repostChannels
+  console.log(repostChannels);
+  console.log(config.repostChannels);
+  const actionBlock = config.repostChannels
     ? [
         {
           type: "actions",
@@ -53098,7 +53068,7 @@ async function sendSlackReleaseNotes(data) {
                 text: "Approve",
               },
               style: "primary",
-              value: input.repostChannels,
+              value: config.repostChannels,
               action_id: "approve_release_notes",
               confirm: {
                 title: {
@@ -53135,7 +53105,7 @@ async function sendSlackReleaseNotes(data) {
     : [];
 
   const slackPayload = {
-    channel: input.channel,
+    channel: config.channel,
     text: title,
     blocks: [
       ...headerBlock,
@@ -53152,7 +53122,7 @@ async function sendSlackReleaseNotes(data) {
       body: JSON.stringify(slackPayload),
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${input.SLACK_BOT_TOKEN}`,
+        Authorization: `Bearer ${config.SLACK_BOT_TOKEN}`,
       },
     },
   );
@@ -53165,6 +53135,32 @@ async function sendSlackReleaseNotes(data) {
     throw new Error(`Slack error: ${slackAPIResponse.warning}`);
   }
 }
+
+;// CONCATENATED MODULE: ./src/index.mjs
+
+
+
+
+
+
+const versionNumberPattern = /^v(\d{4})\.(\d+)$/;
+const semverPattern = /^v(\d+)\.(\d+)\.(\d+)$/;
+
+const octokit = new dist_node.Octokit();
+const [owner, repo] = process.env.GITHUB_REPOSITORY.split("/");
+
+const config = {
+  title: core.getInput("title"),
+  hideAuthors: core.getBooleanInput("hide-authors"),
+  hidePRs: core.getBooleanInput("hide-prs"),
+  hideFullChangeLogLink: core.getBooleanInput("hide-full-change-log-link"),
+  hideTitle: core.getBooleanInput("hide-title"),
+  addDivider: core.getBooleanInput("add-divider"),
+  mergeItems: core.getBooleanInput("merge-items"),
+  channel: core.getInput("channel"),
+  repostChannels: core.getInput("repost-channels"),
+  SLACK_BOT_TOKEN: core.getInput("SLACK_BOT_TOKEN"),
+};
 
 async function createRelease(version) {
   console.log(`Using ${version} as the next version`);
@@ -53191,7 +53187,8 @@ async function createRelease(version) {
     },
   );
 
-  if (core.getInput("SLACK_BOT_TOKEN")) await sendSlackReleaseNotes(data);
+  if (core.getInput("SLACK_BOT_TOKEN"))
+    await sendSlackReleaseNotes(data, config);
 
   core.setOutput("version", isValidTag ? tag : version.toString());
 }
@@ -53247,7 +53244,9 @@ async function run() {
 }
 
 run()
-  .then(() => console.log("done"))
+  .then(() => {
+    console.log("Release created");
+  })
   .catch((err) => {
     core.setFailed(`There was a problem: ${err.message}\n${err.stack}`);
   });
