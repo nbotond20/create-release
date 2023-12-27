@@ -10,19 +10,6 @@ const semverPattern = /^v(\d+)\.(\d+)\.(\d+)$/;
 const octokit = new Octokit();
 const [owner, repo] = process.env.GITHUB_REPOSITORY!.split("/");
 
-const config = {
-  title: core.getInput("title"),
-  hideAuthors: core.getBooleanInput("hide-authors"),
-  hidePRs: core.getBooleanInput("hide-prs"),
-  hideFullChangeLogLink: core.getBooleanInput("hide-full-change-log-link"),
-  hideTitle: core.getBooleanInput("hide-title"),
-  addDivider: core.getBooleanInput("add-divider"),
-  mergeItems: core.getBooleanInput("merge-items"),
-  channel: core.getInput("channel"),
-  repostChannels: core.getInput("repost-channels"),
-  SLACK_BOT_TOKEN: core.getInput("SLACK_BOT_TOKEN"),
-};
-
 async function createRelease(version: Version | SemanticVersion) {
   console.log(`Using ${version} as the next version`);
 
@@ -48,8 +35,21 @@ async function createRelease(version: Version | SemanticVersion) {
     },
   );
 
-  if (core.getInput("SLACK_BOT_TOKEN"))
+  if (core.getInput("SLACK_BOT_TOKEN")) {
+    const config = {
+      title: core.getInput("title"),
+      hideAuthors: core.getBooleanInput("hide-authors"),
+      hidePRs: core.getBooleanInput("hide-prs"),
+      hideFullChangeLogLink: core.getBooleanInput("hide-full-change-log-link"),
+      hideTitle: core.getBooleanInput("hide-title"),
+      addDivider: core.getBooleanInput("add-divider"),
+      mergeItems: core.getBooleanInput("merge-items"),
+      channel: core.getInput("channel"),
+      repostChannels: core.getInput("repost-channels"),
+      SLACK_BOT_TOKEN: core.getInput("SLACK_BOT_TOKEN"),
+    };
     await sendSlackReleaseNotes(data as Data, config);
+  }
 
   core.setOutput("version", isValidTag ? tag : version.toString());
 }

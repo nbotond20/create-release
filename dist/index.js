@@ -51167,18 +51167,6 @@ const versionNumberPattern = /^v(\d{4})\.(\d+)$/;
 const semverPattern = /^v(\d+)\.(\d+)\.(\d+)$/;
 const octokit = new action_1.Octokit();
 const [owner, repo] = process.env.GITHUB_REPOSITORY.split("/");
-const config = {
-    title: core_1.default.getInput("title"),
-    hideAuthors: core_1.default.getBooleanInput("hide-authors"),
-    hidePRs: core_1.default.getBooleanInput("hide-prs"),
-    hideFullChangeLogLink: core_1.default.getBooleanInput("hide-full-change-log-link"),
-    hideTitle: core_1.default.getBooleanInput("hide-title"),
-    addDivider: core_1.default.getBooleanInput("add-divider"),
-    mergeItems: core_1.default.getBooleanInput("merge-items"),
-    channel: core_1.default.getInput("channel"),
-    repostChannels: core_1.default.getInput("repost-channels"),
-    SLACK_BOT_TOKEN: core_1.default.getInput("SLACK_BOT_TOKEN"),
-};
 function createRelease(version) {
     return __awaiter(this, void 0, void 0, function* () {
         console.log(`Using ${version} as the next version`);
@@ -51197,8 +51185,21 @@ function createRelease(version) {
             generate_release_notes: true,
             target_commitish: process.env.GITHUB_SHA,
         });
-        if (core_1.default.getInput("SLACK_BOT_TOKEN"))
+        if (core_1.default.getInput("SLACK_BOT_TOKEN")) {
+            const config = {
+                title: core_1.default.getInput("title"),
+                hideAuthors: core_1.default.getBooleanInput("hide-authors"),
+                hidePRs: core_1.default.getBooleanInput("hide-prs"),
+                hideFullChangeLogLink: core_1.default.getBooleanInput("hide-full-change-log-link"),
+                hideTitle: core_1.default.getBooleanInput("hide-title"),
+                addDivider: core_1.default.getBooleanInput("add-divider"),
+                mergeItems: core_1.default.getBooleanInput("merge-items"),
+                channel: core_1.default.getInput("channel"),
+                repostChannels: core_1.default.getInput("repost-channels"),
+                SLACK_BOT_TOKEN: core_1.default.getInput("SLACK_BOT_TOKEN"),
+            };
             yield (0, send_slack_release_notes_js_1.sendSlackReleaseNotes)(data, config);
+        }
         core_1.default.setOutput("version", isValidTag ? tag : version.toString());
     });
 }
