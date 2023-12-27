@@ -22,7 +22,7 @@ jobs:
       contents: write
     steps:
       - name: Create release
-        uses: nbotond20/create-release@v1.1.1
+        uses: nbotond20/create-release@v1.1.14
         with:
           use-sem-ver: true
           tag: ${{ inputs.tag }}
