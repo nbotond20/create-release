@@ -26,20 +26,20 @@ export async function sendSlackReleaseNotes(data: Data, config: SlackConfig) {
     return `<${prLink}|#${prNumber}>`
   }
 
-  const body = data.body
-
   // Get title (replace $release_name with the version number if needed)
   const title = config.title ? config.title.replace('$release_name', data.name) : data.name
 
   // Get full changelog link
-  const fullChangelogLink = body.split('\n\n\n')!.pop()!.trim()
+  const bodyWithoutNewContributorSection = data.body.replace(/## New Contributors\n.*\n\n/g, '\n')
+
+  const fullChangelogLink = bodyWithoutNewContributorSection.split('\n\n\n')!.pop()!.trim()
 
   // Get sections
   let sections: string
-  const isSectioned = body.includes('### ')
+  const isSectioned = bodyWithoutNewContributorSection.includes('### ')
   // This is a check to see if the changelog is in a sectioned format (uses release.yml) or not
   if (isSectioned) {
-    sections = body
+    sections = bodyWithoutNewContributorSection
       .replace(fullChangelogLink, '') // Remove the changelog from the body
       .trim() // Remove leading and trailing newlines
       .split('### ') // Split into sections
@@ -49,7 +49,7 @@ export async function sendSlackReleaseNotes(data: Data, config: SlackConfig) {
       .map(line => (line.includes('*') ? line.replace('*', '•') : `<section-title>*${line}*\n`)) // Replace * with • and wrap section titles in *
       .join('\n')
   } else {
-    sections = body
+    sections = bodyWithoutNewContributorSection
       .replace(fullChangelogLink, '') // Remove the changelog from the body
       .trim() // Remove leading and trailing newlines
       .replace(/## What's Changed\n/g, '') // Remove ## title
