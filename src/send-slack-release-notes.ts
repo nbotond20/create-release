@@ -26,6 +26,15 @@ export async function sendSlackReleaseNotes(data: Data, config: SlackConfig) {
     return `<${prLink}|#${prNumber}>`
   }
 
+  const createSlackLinkFromChangeLogLink = (changeLogLink: string) => {
+    const changeLogVersion = changeLogLink.split('/').pop()
+    const changeLogParts = changeLogLink.split(': ')
+    const changeLogText = changeLogParts[0]
+    const link = changeLogParts[1]
+
+    return `${changeLogText}: <${link}|${changeLogVersion}>`
+  }
+
   // Get title (replace $release_name with the version number if needed)
   const title = config.title ? config.title.replace('$release_name', data.name) : data.name
 
@@ -33,6 +42,7 @@ export async function sendSlackReleaseNotes(data: Data, config: SlackConfig) {
   const bodyWithoutNewContributorSection = data.body.replace(/## New Contributors\n.*\n\n/g, '\n')
 
   const fullChangelogLink = bodyWithoutNewContributorSection.split('\n\n\n')!.pop()!.trim()
+  const fullChangelogSlackLink = createSlackLinkFromChangeLogLink(fullChangelogLink)
 
   // Get sections
   let sections: string
@@ -100,7 +110,7 @@ export async function sendSlackReleaseNotes(data: Data, config: SlackConfig) {
           type: 'context',
           elements: [
             {
-              text: fullChangelogLink.replaceAll('**', '*'),
+              text: fullChangelogSlackLink.replaceAll('**', '*'),
               type: 'mrkdwn',
             },
           ],
