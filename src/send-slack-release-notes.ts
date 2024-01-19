@@ -69,7 +69,7 @@ export async function sendSlackReleaseNotes(data: Data, config: SlackConfig) {
 
   if (config.hideAuthors) {
     // Remove authors from sections
-    sections = sections.replaceAll(/ by @\w+/g, '')
+    sections = sections.replaceAll(/ by @\S+/g, '')
   } else {
     // Replace github tags with slack links (format: <link|text>)
     const githubTags = sections.match(/@([^ ]+)/g)
