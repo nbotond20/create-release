@@ -33,7 +33,8 @@ async function createRelease(version: Version | SemanticVersion) {
     target_commitish: process.env.GITHUB_SHA,
   })
 
-  if (core.getInput('SLACK_BOT_TOKEN')) {
+  const SLACK_BOT_TOKEN = core.getInput('SLACK_BOT_TOKEN')
+  if (SLACK_BOT_TOKEN) {
     const config = {
       title: core.getInput('title'),
       hideAuthors: core.getBooleanInput('hide-authors'),
@@ -44,7 +45,7 @@ async function createRelease(version: Version | SemanticVersion) {
       mergeItems: core.getBooleanInput('merge-items'),
       channel: core.getInput('channel'),
       repostChannels: core.getInput('repost-channels'),
-      SLACK_BOT_TOKEN: core.getInput('SLACK_BOT_TOKEN'),
+      SLACK_BOT_TOKEN,
     }
     await sendSlackReleaseNotes(data as Data, config)
   }

@@ -39,7 +39,7 @@ export async function sendSlackReleaseNotes(data: Data, config: SlackConfig) {
   const title = config.title ? config.title.replace('$release_name', data.name) : data.name
 
   // Get full changelog link
-  const bodyWithoutNewContributorSection = data.body.replace(/## New Contributors\n.*\n\n/g, '\n')
+  const bodyWithoutNewContributorSection = data.body.replace(/## New Contributors[\s\S]*?\n\n/g, '\n')
 
   const fullChangelogLink = bodyWithoutNewContributorSection.split('\n\n\n')!.pop()!.trim()
   const fullChangelogSlackLink = createSlackLinkFromChangeLogLink(fullChangelogLink)
