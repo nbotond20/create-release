@@ -14,8 +14,10 @@ For this to work you'll need to create a Slack app and add it to your workspace.
 - `SLACK_BOT_TOKEN`: Slack bot token
 - `slack-only`: (default: `false`) It won't create a release, just use the latest one found and send a slack message
 - `custom-changelog`: (default: `false`) Use custom changelog instead of the auto generated one
-  > [!IMPORTANT]
-  > If you enable `custom-changelog`, the other formatting options won't work besides the `title`.
+
+> [!IMPORTANT]
+> If you enable `custom-changelog`, the other formatting options won't work besides the `title`.
+
 - `title`: (default: The github release title) Title of the release (You can use the `$release_name` variable to include the release name)
 - `hide-authors`: (default: `false`) Hide authors in release notes
 - `hide-prs`: (default: `false`) Hide PRs in release notes
