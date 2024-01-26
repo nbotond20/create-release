@@ -51196,7 +51196,8 @@ async function createRelease(version) {
         generate_release_notes: true,
         target_commitish: process.env.GITHUB_SHA,
     });
-    if (core.getInput('SLACK_BOT_TOKEN')) {
+    const SLACK_BOT_TOKEN = core.getInput('SLACK_BOT_TOKEN');
+    if (SLACK_BOT_TOKEN) {
         const config = {
             title: core.getInput('title'),
             hideAuthors: core.getBooleanInput('hide-authors'),
@@ -51207,7 +51208,7 @@ async function createRelease(version) {
             mergeItems: core.getBooleanInput('merge-items'),
             channel: core.getInput('channel'),
             repostChannels: core.getInput('repost-channels'),
-            SLACK_BOT_TOKEN: core.getInput('SLACK_BOT_TOKEN'),
+            SLACK_BOT_TOKEN,
         };
         await (0, send_slack_release_notes_js_1.sendSlackReleaseNotes)(data, config);
     }
@@ -51317,7 +51318,7 @@ async function sendSlackReleaseNotes(data, config) {
     // Get title (replace $release_name with the version number if needed)
     const title = config.title ? config.title.replace('$release_name', data.name) : data.name;
     // Get full changelog link
-    const bodyWithoutNewContributorSection = data.body.replace(/## New Contributors\n.*\n\n/g, '\n');
+    const bodyWithoutNewContributorSection = data.body.replace(/## New Contributors[\s\S]*?\n\n/g, '\n');
     const fullChangelogLink = bodyWithoutNewContributorSection.split('\n\n\n').pop().trim();
     const fullChangelogSlackLink = createSlackLinkFromChangeLogLink(fullChangelogLink);
     // Get sections
