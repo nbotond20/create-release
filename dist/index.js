@@ -51178,7 +51178,7 @@ const versionNumberPattern = /^v(\d{4})\.(\d+)$/;
 const semverPattern = /^v(\d+)\.(\d+)\.(\d+)$/;
 const octokit = new action_1.Octokit();
 const [owner, repo] = process.env.GITHUB_REPOSITORY.split('/');
-async function createRelease(version) {
+async function createRelease(version, slackConfig) {
     // eslint-disable-next-line no-console
     console.log(`Using ${version} as the next version`);
     if (!process.env.GITHUB_TOKEN) {
@@ -51196,32 +51196,44 @@ async function createRelease(version) {
         generate_release_notes: true,
         target_commitish: process.env.GITHUB_SHA,
     });
-    const SLACK_BOT_TOKEN = core.getInput('SLACK_BOT_TOKEN');
-    if (SLACK_BOT_TOKEN) {
-        const config = {
-            title: core.getInput('title'),
-            hideAuthors: core.getBooleanInput('hide-authors'),
-            hidePRs: core.getBooleanInput('hide-prs'),
-            hideFullChangeLogLink: core.getBooleanInput('hide-full-change-log-link'),
-            hideTitle: core.getBooleanInput('hide-title'),
-            addDivider: core.getBooleanInput('add-divider'),
-            mergeItems: core.getBooleanInput('merge-items'),
-            channel: core.getInput('channel'),
-            repostChannels: core.getInput('repost-channels'),
-            SLACK_BOT_TOKEN,
-        };
-        await (0, send_slack_release_notes_js_1.sendSlackReleaseNotes)(data, config);
+    if (slackConfig.SLACK_BOT_TOKEN) {
+        await (0, send_slack_release_notes_js_1.sendSlackReleaseNotes)(data, slackConfig);
     }
     core.setOutput('version', isValidTag ? tag : version.toString());
 }
 async function run() {
+    const slackOnly = core.getBooleanInput('slack-only');
+    const SLACK_BOT_TOKEN = core.getInput('SLACK_BOT_TOKEN');
+    if (slackOnly && !SLACK_BOT_TOKEN) {
+        throw new Error('Slack only mode is set but SLACK_BOT_TOKEN is missing!');
+    }
+    const slackConfig = {
+        title: core.getInput('title'),
+        hideAuthors: core.getBooleanInput('hide-authors'),
+        hidePRs: core.getBooleanInput('hide-prs'),
+        hideFullChangeLogLink: core.getBooleanInput('hide-full-change-log-link'),
+        hideTitle: core.getBooleanInput('hide-title'),
+        addDivider: core.getBooleanInput('add-divider'),
+        mergeItems: core.getBooleanInput('merge-items'),
+        channel: core.getInput('channel'),
+        repostChannels: core.getInput('repost-channels'),
+        customChangelog: core.getBooleanInput('custom-changelog'),
+        SLACK_BOT_TOKEN,
+    };
     let release;
     try {
         const response = await octokit.request('GET /repos/{owner}/{repo}/releases/latest', { owner, repo });
         release = response.data;
+        if (slackOnly) {
+            await (0, send_slack_release_notes_js_1.sendSlackReleaseNotes)(response.data, slackConfig);
+            return;
+        }
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
     }
     catch (err) {
+        if (slackOnly) {
+            throw new Error('No release found!');
+        }
         if (err.message !== 'Not Found') {
             throw err;
         }
@@ -51231,7 +51243,7 @@ async function run() {
     if (!release) {
         // eslint-disable-next-line no-console
         console.log('No previous release found.');
-        await createRelease(nextVersion);
+        await createRelease(nextVersion, slackConfig);
         return;
     }
     const lastVersion = useSemVer ? semverPattern.exec(release.name) : versionNumberPattern.exec(release.name);
@@ -51254,7 +51266,7 @@ async function run() {
         // eslint-disable-next-line no-console
         console.warn('Last version number does not match the pattern');
     }
-    await createRelease(nextVersion);
+    await createRelease(nextVersion, slackConfig);
 }
 run()
     .then(() => {
@@ -51317,6 +51329,42 @@ async function sendSlackReleaseNotes(data, config) {
     };
     // Get title (replace $release_name with the version number if needed)
     const title = config.title ? config.title.replace('$release_name', data.name) : data.name;
+    // If custom changelog is enabled, use the body as is
+    if (config.customChangelog) {
+        const slackPayload = {
+            channel: config.channel,
+            text: title,
+            blocks: [
+                {
+                    text: {
+                        emoji: true,
+                        text: title,
+                        type: 'plain_text',
+                    },
+                    type: 'header',
+                },
+                {
+                    type: 'section',
+                    text: {
+                        type: 'mrkdwn',
+                        text: data.body,
+                    },
+                },
+            ],
+        };
+        const slackAPIResponse = await fetch('https://slack.com/api/chat.postMessage', {
+            method: 'POST',
+            body: JSON.stringify(slackPayload),
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${config.SLACK_BOT_TOKEN}`,
+            },
+        });
+        if (!slackAPIResponse.ok) {
+            throw new Error('Error sending slack message');
+        }
+        return;
+    }
     // Get full changelog link
     const bodyWithoutNewContributorSection = data.body.replace(/## New Contributors[\s\S]*?\n\n/g, '\n');
     const fullChangelogLink = bodyWithoutNewContributorSection.split('\n\n\n').pop().trim();

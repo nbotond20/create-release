@@ -2,7 +2,7 @@ import * as core from '@actions/core'
 import { Octokit } from '@octokit/action'
 import { Version } from './version'
 import { SemanticVersion } from './semantic-version'
-import { Data, sendSlackReleaseNotes } from './send-slack-release-notes.js'
+import { Data, SlackConfig, sendSlackReleaseNotes } from './send-slack-release-notes.js'
 
 const versionNumberPattern = /^v(\d{4})\.(\d+)$/
 const semverPattern = /^v(\d+)\.(\d+)\.(\d+)$/
@@ -10,7 +10,7 @@ const semverPattern = /^v(\d+)\.(\d+)\.(\d+)$/
 const octokit = new Octokit()
 const [owner, repo] = process.env.GITHUB_REPOSITORY!.split('/')
 
-async function createRelease(version: Version | SemanticVersion) {
+async function createRelease(version: Version | SemanticVersion, slackConfig: SlackConfig) {
   // eslint-disable-next-line no-console
   console.log(`Using ${version} as the next version`)
 
@@ -33,33 +33,51 @@ async function createRelease(version: Version | SemanticVersion) {
     target_commitish: process.env.GITHUB_SHA,
   })
 
-  const SLACK_BOT_TOKEN = core.getInput('SLACK_BOT_TOKEN')
-  if (SLACK_BOT_TOKEN) {
-    const config = {
-      title: core.getInput('title'),
-      hideAuthors: core.getBooleanInput('hide-authors'),
-      hidePRs: core.getBooleanInput('hide-prs'),
-      hideFullChangeLogLink: core.getBooleanInput('hide-full-change-log-link'),
-      hideTitle: core.getBooleanInput('hide-title'),
-      addDivider: core.getBooleanInput('add-divider'),
-      mergeItems: core.getBooleanInput('merge-items'),
-      channel: core.getInput('channel'),
-      repostChannels: core.getInput('repost-channels'),
-      SLACK_BOT_TOKEN,
-    }
-    await sendSlackReleaseNotes(data as Data, config)
+  if (slackConfig.SLACK_BOT_TOKEN) {
+    await sendSlackReleaseNotes(data as Data, slackConfig)
   }
 
   core.setOutput('version', isValidTag ? tag : version.toString())
 }
 
 async function run() {
+  const slackOnly = core.getBooleanInput('slack-only')
+  const SLACK_BOT_TOKEN = core.getInput('SLACK_BOT_TOKEN')
+
+  if (slackOnly && !SLACK_BOT_TOKEN) {
+    throw new Error('Slack only mode is set but SLACK_BOT_TOKEN is missing!')
+  }
+
+  const slackConfig = {
+    title: core.getInput('title'),
+    hideAuthors: core.getBooleanInput('hide-authors'),
+    hidePRs: core.getBooleanInput('hide-prs'),
+    hideFullChangeLogLink: core.getBooleanInput('hide-full-change-log-link'),
+    hideTitle: core.getBooleanInput('hide-title'),
+    addDivider: core.getBooleanInput('add-divider'),
+    mergeItems: core.getBooleanInput('merge-items'),
+    channel: core.getInput('channel'),
+    repostChannels: core.getInput('repost-channels'),
+    customChangelog: core.getBooleanInput('custom-changelog'),
+    SLACK_BOT_TOKEN,
+  }
+
   let release
   try {
     const response = await octokit.request('GET /repos/{owner}/{repo}/releases/latest', { owner, repo })
     release = response.data
+
+    if (slackOnly) {
+      await sendSlackReleaseNotes(response.data as Data, slackConfig)
+      return
+    }
+
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (err: any) {
+    if (slackOnly) {
+      throw new Error('No release found!')
+    }
+
     if (err.message !== 'Not Found') {
       throw err
     }
@@ -72,7 +90,7 @@ async function run() {
   if (!release) {
     // eslint-disable-next-line no-console
     console.log('No previous release found.')
-    await createRelease(nextVersion)
+    await createRelease(nextVersion, slackConfig)
     return
   }
 
@@ -95,7 +113,7 @@ async function run() {
     console.warn('Last version number does not match the pattern')
   }
 
-  await createRelease(nextVersion)
+  await createRelease(nextVersion, slackConfig)
 }
 
 run()

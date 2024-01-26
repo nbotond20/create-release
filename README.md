@@ -12,6 +12,10 @@ This action creates a release in GitHub. If a slack bot token is provided, it wi
 For this to work you'll need to create a Slack app and add it to your workspace. You'll also need to enable `Incoming Webhooks` for your app. You can find more information about this [here](https://api.slack.com/authentication/basics).
 
 - `SLACK_BOT_TOKEN`: Slack bot token
+- `slack-only`: (default: `false`) It won't create a release, just use the latest one found and send a slack message
+- `custom-changelog`: (default: `false`) Use custom changelog instead of the auto generated one
+  > [!IMPORTANT]
+  > If you enable `custom-changelog`, the other formatting options won't work besides the `title`.
 - `title`: (default: The github release title) Title of the release (You can use the `$release_name` variable to include the release name)
 - `hide-authors`: (default: `false`) Hide authors in release notes
 - `hide-prs`: (default: `false`) Hide PRs in release notes
@@ -31,6 +35,8 @@ For this to work you'll need to create a Slack app and add it to your workspace.
 > [!IMPORTANT]
 > You will need to set `GITHUB_TOKEN` in environment variables and need to provide write access to the repository.
 
+### Usage with creating a release
+
 ```yaml
 name: Create release
 on:
@@ -46,9 +52,31 @@ jobs:
       contents: write
     steps:
       - name: Create release
-        uses: nbotond20/create-release@v1.1.1
+        uses: nbotond20/create-release@v1.2.5
         with:
           use-sem-ver: true
+```
+
+### Usage only sending a slack message
+
+```yaml
+name: Create release
+on:
+  release:
+    types: [created]
+env:
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+jobs:
+  create-release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Create release
+        uses: nbotond20/create-release@v1.2.5
+        with:
+          slack-only: true
+          custom-changelog: true
 ```
 
 If you want to see nicely structured release notes, you can create a `release.yml` file under the `.github` folder with the following content:
@@ -76,7 +104,7 @@ changelog:
         - automation
     - title: Other Changes
       labels:
-        - "*"
+        - '*'
 ```
 
 For more information about the custom release notes, check out the offical github [documentation](https://docs.github.com/en/repositories/releasing-projects-on-github/automatically-generated-release-notes).

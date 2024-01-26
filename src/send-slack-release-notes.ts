@@ -1,4 +1,4 @@
-type SlackConfig = {
+export type SlackConfig = {
   channel: string
   SLACK_BOT_TOKEN: string
   title?: string
@@ -9,6 +9,7 @@ type SlackConfig = {
   addDivider?: boolean
   mergeItems?: boolean
   repostChannels?: string
+  customChangelog?: boolean
 }
 
 export type Data = {
@@ -37,6 +38,46 @@ export async function sendSlackReleaseNotes(data: Data, config: SlackConfig) {
 
   // Get title (replace $release_name with the version number if needed)
   const title = config.title ? config.title.replace('$release_name', data.name) : data.name
+
+  // If custom changelog is enabled, use the body as is
+  if (config.customChangelog) {
+    const slackPayload = {
+      channel: config.channel,
+      text: title,
+      blocks: [
+        {
+          text: {
+            emoji: true,
+            text: title,
+            type: 'plain_text',
+          },
+          type: 'header',
+        },
+        {
+          type: 'section',
+          text: {
+            type: 'mrkdwn',
+            text: data.body,
+          },
+        },
+      ],
+    }
+
+    const slackAPIResponse = await fetch('https://slack.com/api/chat.postMessage', {
+      method: 'POST',
+      body: JSON.stringify(slackPayload),
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${config.SLACK_BOT_TOKEN}`,
+      },
+    })
+
+    if (!slackAPIResponse.ok) {
+      throw new Error('Error sending slack message')
+    }
+
+    return
+  }
 
   // Get full changelog link
   const bodyWithoutNewContributorSection = data.body.replace(/## New Contributors[\s\S]*?\n\n/g, '\n')
