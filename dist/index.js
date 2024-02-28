@@ -51414,6 +51414,16 @@ async function sendSlackReleaseNotes(data, config) {
             sections = sections.replaceAll(prLink, createSlackLinkFromPRLink(prLink));
         });
     }
+    // Replace TCI numbers with slack links (format: <link|text>)
+    const TCI_PATTERN = /INC-\d+/g;
+    const TCI_LINK = 'https://helpdesk.infinitaslearning.com/a/tickets/';
+    const tcis = sections.match(TCI_PATTERN);
+    if (tcis) {
+        Array.from(new Set(tcis))?.forEach(tci => {
+            const number = tci.split('-')[1];
+            sections = sections.replaceAll(tci, `<${TCI_LINK}${number}|${tci}>`);
+        });
+    }
     // Create header block
     const headerBlock = !config.hideTitle
         ? [
