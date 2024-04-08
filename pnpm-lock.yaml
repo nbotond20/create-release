@@ -13,7 +13,7 @@ dependencies:
     version: 6.0.0
   '@octokit/action':
     specifier: ^6.0.6
-    version: 6.0.7
+    version: 6.1.0
 
 devDependencies:
   '@types/node':
@@ -157,8 +157,8 @@ packages:
       fastq: 1.17.1
     dev: true
 
-  /@octokit/action@6.0.7:
-    resolution: {integrity: sha512-0Q1L96F8JsNb+M2NzN7r4artGyX02Pa9tzg+JaxXncvdHEXVIJFnkA8CstC52EB4DAZ0b8wpqDOG05v/DcyS3g==}
+  /@octokit/action@6.1.0:
+    resolution: {integrity: sha512-lo+nHx8kAV86bxvOVOI3vFjX3gXPd/L7guAUbvs3pUvnR2KC+R7yjBkA1uACt4gYhs4LcWP3AXSGQzsbeN2XXw==}
     engines: {node: '>= 18'}
     dependencies:
       '@octokit/auth-action': 4.0.1
