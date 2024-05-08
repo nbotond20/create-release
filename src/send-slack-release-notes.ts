@@ -10,6 +10,7 @@ export type SlackConfig = {
   mergeItems?: boolean
   repostChannels?: string
   customChangelog?: boolean
+  useLatestRelease?: boolean
 }
 
 export type Data = {

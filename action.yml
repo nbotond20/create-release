@@ -39,6 +39,9 @@ inputs:
   custom-changelog:
     description: 'Custom changelog'
     default: 'false'
+  use-latest-release:
+    description: 'Use latest release'
+    default: 'false'
 
 outputs:
   version:

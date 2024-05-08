@@ -25,13 +25,20 @@ async function createRelease(version: Version | SemanticVersion, slackConfig: Sl
   const tag = core.getInput('tag')
   const isValidTag = versionNumberPattern.test(tag) || semverPattern.test(tag)
 
-  const { data } = await octokit.request('POST /repos/{owner}/{repo}/releases', {
-    owner,
-    repo,
-    tag_name: isValidTag ? tag : version.toString(),
-    generate_release_notes: true,
-    target_commitish: process.env.GITHUB_SHA,
-  })
+  let data
+  if (slackConfig.useLatestRelease) {
+    const response = await octokit.request('GET /repos/{owner}/{repo}/releases/latest', { owner, repo })
+    data = response.data
+  } else {
+    const response = await octokit.request('POST /repos/{owner}/{repo}/releases', {
+      owner,
+      repo,
+      tag_name: isValidTag ? tag : version.toString(),
+      generate_release_notes: true,
+      target_commitish: process.env.GITHUB_SHA,
+    })
+    data = response.data
+  }
 
   if (slackConfig.SLACK_BOT_TOKEN) {
     await sendSlackReleaseNotes(data as Data, slackConfig)
@@ -60,6 +67,7 @@ async function run() {
     repostChannels: core.getInput('repost-channels'),
     customChangelog: core.getBooleanInput('custom-changelog'),
     SLACK_BOT_TOKEN,
+    useLatestRelease: core.getBooleanInput('use-latest-release'),
   }
 
   let release
