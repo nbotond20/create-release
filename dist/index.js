@@ -51192,32 +51192,19 @@ async function createRelease(version, slackConfig) {
     }
     const tag = core.getInput('tag');
     const isValidTag = versionNumberPattern.test(tag) || semverPattern.test(tag);
-    let data;
-    if (slackConfig.useLatestRelease) {
-        const response = await octokit.request('GET /repos/{owner}/{repo}/releases/latest', { owner, repo });
-        data = response.data;
-    }
-    else {
-        const response = await octokit.request('POST /repos/{owner}/{repo}/releases', {
-            owner,
-            repo,
-            tag_name: isValidTag ? tag : version.toString(),
-            generate_release_notes: true,
-            target_commitish: process.env.GITHUB_SHA,
-        });
-        data = response.data;
-    }
-    if (slackConfig.SLACK_BOT_TOKEN) {
-        await (0, send_slack_release_notes_js_1.sendSlackReleaseNotes)(data, slackConfig);
-    }
+    const { data } = await octokit.request('POST /repos/{owner}/{repo}/releases', {
+        owner,
+        repo,
+        tag_name: isValidTag ? tag : version.toString(),
+        generate_release_notes: true,
+        target_commitish: process.env.GITHUB_SHA,
+    });
+    await (0, send_slack_release_notes_js_1.sendSlackReleaseNotes)(data, slackConfig);
     core.setOutput('version', isValidTag ? tag : version.toString());
 }
 async function run() {
-    const slackOnly = core.getBooleanInput('slack-only');
+    const createReleaseOption = core.getBooleanInput('create-release');
     const SLACK_BOT_TOKEN = core.getInput('SLACK_BOT_TOKEN');
-    if (slackOnly && !SLACK_BOT_TOKEN) {
-        throw new Error('Slack only mode is set but SLACK_BOT_TOKEN is missing!');
-    }
     const slackConfig = {
         title: core.getInput('title'),
         hideAuthors: core.getBooleanInput('hide-authors'),
@@ -51228,23 +51215,23 @@ async function run() {
         mergeItems: core.getBooleanInput('merge-items'),
         channel: core.getInput('channel'),
         repostChannels: core.getInput('repost-channels'),
-        customChangelog: core.getBooleanInput('custom-changelog'),
+        customChangelog: core.getBooleanInput('custom-github-changelog'),
         SLACK_BOT_TOKEN,
-        useLatestRelease: core.getBooleanInput('use-latest-release'),
+        blocks: core.getInput('blocks'),
     };
     let release;
     try {
         const response = await octokit.request('GET /repos/{owner}/{repo}/releases/latest', { owner, repo });
         release = response.data;
-        if (slackOnly) {
+        if (!createReleaseOption) {
             await (0, send_slack_release_notes_js_1.sendSlackReleaseNotes)(response.data, slackConfig);
             return;
         }
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
     }
     catch (err) {
-        if (slackOnly) {
-            throw new Error('No release found!');
+        if (!createReleaseOption && !slackConfig.blocks) {
+            throw new Error('You are trying use the latest release but there is no release available.');
         }
         if (err.message !== 'Not Found') {
             throw err;
@@ -51325,8 +51312,54 @@ exports.SemanticVersion = SemanticVersion;
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.sendSlackReleaseNotes = void 0;
 async function sendSlackReleaseNotes(data, config) {
+    if (!config.SLACK_BOT_TOKEN) {
+        throw new Error('SLACK_BOT_TOKEN is not set');
+    }
     if (!config.channel) {
         throw new Error('Channel is not set');
+    }
+    if (config.blocks) {
+        let parsedBlocks;
+        try {
+            parsedBlocks = JSON.parse(config.blocks);
+        }
+        catch {
+            throw new Error('Failed to parse blocks as JSON!');
+        }
+        if (!Array.isArray(parsedBlocks)) {
+            throw new Error('Blocks must be an array of Slack blocks!');
+        }
+        const slackPayload = {
+            channel: config.channel,
+            text: config.title || 'Release notes',
+            blocks: [
+                ...(config.title
+                    ? [
+                        {
+                            text: {
+                                emoji: true,
+                                text: config.title,
+                                type: 'plain_text',
+                            },
+                            type: 'header',
+                        },
+                    ]
+                    : []),
+                ...parsedBlocks,
+            ],
+        };
+        const slackAPIResponse = await fetch('https://slack.com/api/chat.postMessage', {
+            method: 'POST',
+            body: JSON.stringify(slackPayload),
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${config.SLACK_BOT_TOKEN}`,
+            },
+        });
+        if (!slackAPIResponse.ok) {
+            throw new Error('Error sending slack message');
+        }
+        return;
     }
     const createSlackLinkFromPRLink = (prLink) => {
         const prNumber = prLink.split('/').pop();
@@ -51427,6 +51460,7 @@ async function sendSlackReleaseNotes(data, config) {
         });
     }
     // Replace TCI numbers with slack links (format: <link|text>)
+    // TODO: Move this to a separate action input
     const TCI_PATTERN = /INC-\d+/g;
     const TCI_LINK = 'https://helpdesk.infinitaslearning.com/a/tickets/';
     const tcis = sections.match(TCI_PATTERN);

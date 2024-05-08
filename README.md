@@ -12,11 +12,12 @@ This action creates a release in GitHub. If a slack bot token is provided, it wi
 For this to work you'll need to create a Slack app and add it to your workspace. You'll also need to enable `Incoming Webhooks` for your app. You can find more information about this [here](https://api.slack.com/authentication/basics).
 
 - `SLACK_BOT_TOKEN`: Slack bot token
-- `slack-only`: (default: `false`) It won't create a release, just use the latest one found and send a slack message
-- `custom-changelog`: (default: `false`) Use custom changelog instead of the auto generated one
+- `custom-github-changelog`: (default: `false`) Use custom changelog instead of the auto generated one. If you are passing in a custom body to github release, you can use this option to send the same body to slack.
+- `create-release`: (default: `true`) Create a release in GitHub. If set to `false`, it will use the latest release.
+- `blocks`: (default: `[]`) Slack blocks to send. This should be a javascript array as a string. You can find more information about slack blocks [here](https://api.slack.com/reference/block-kit/blocks)
 
 > [!IMPORTANT]
-> If you enable `custom-changelog`, the other formatting options won't work besides the `title`.
+> If you enable `custom-github-changelog` or `blocks`, the other formatting options won't work besides the `title`.
 
 - `title`: (default: The github release title) Title of the release (You can use the `$release_name` variable to include the release name)
 - `hide-authors`: (default: `false`) Hide authors in release notes
@@ -57,28 +58,6 @@ jobs:
         uses: nbotond20/create-release@v1.2.5
         with:
           use-sem-ver: true
-```
-
-### Usage only sending a slack message
-
-```yaml
-name: Create release
-on:
-  release:
-    types: [created]
-env:
-  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-jobs:
-  create-release:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-    steps:
-      - name: Create release
-        uses: nbotond20/create-release@v1.2.5
-        with:
-          slack-only: true
-          custom-changelog: true
 ```
 
 If you want to see nicely structured release notes, you can create a `release.yml` file under the `.github` folder with the following content:
