@@ -2,6 +2,8 @@ name: 'Create release'
 description: 'Create a release'
 
 inputs:
+  SLACK_BOT_TOKEN:
+    description: 'Slack bot token'
   title:
     description: 'Title of the release'
   hide-authors:
@@ -23,8 +25,6 @@ inputs:
     description: 'Channel to publish to'
   repost-channels:
     description: 'Channels to repost to'
-  SLACK_BOT_TOKEN:
-    description: 'Slack bot token'
   use-sem-ver:
     description: 'Use semantic versioning'
     default: 'false'
@@ -33,15 +33,14 @@ inputs:
   merge-items:
     description: 'Merge auto-generated items into one item'
     default: 'false'
-  slack-only:
-    description: 'Only post to slack'
-    default: 'false'
-  custom-changelog:
+  custom-github-changelog:
     description: 'Custom changelog'
     default: 'false'
-  use-latest-release:
-    description: 'Use latest release'
-    default: 'false'
+  create-release:
+    description: 'Create a release in GitHub'
+    default: 'true'
+  blocks:
+    description: 'Blocks to add to the release'
 
 outputs:
   version:

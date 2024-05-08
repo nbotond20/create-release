@@ -25,35 +25,22 @@ async function createRelease(version: Version | SemanticVersion, slackConfig: Sl
   const tag = core.getInput('tag')
   const isValidTag = versionNumberPattern.test(tag) || semverPattern.test(tag)
 
-  let data
-  if (slackConfig.useLatestRelease) {
-    const response = await octokit.request('GET /repos/{owner}/{repo}/releases/latest', { owner, repo })
-    data = response.data
-  } else {
-    const response = await octokit.request('POST /repos/{owner}/{repo}/releases', {
-      owner,
-      repo,
-      tag_name: isValidTag ? tag : version.toString(),
-      generate_release_notes: true,
-      target_commitish: process.env.GITHUB_SHA,
-    })
-    data = response.data
-  }
+  const { data } = await octokit.request('POST /repos/{owner}/{repo}/releases', {
+    owner,
+    repo,
+    tag_name: isValidTag ? tag : version.toString(),
+    generate_release_notes: true,
+    target_commitish: process.env.GITHUB_SHA,
+  })
 
-  if (slackConfig.SLACK_BOT_TOKEN) {
-    await sendSlackReleaseNotes(data as Data, slackConfig)
-  }
+  await sendSlackReleaseNotes(data as Data, slackConfig)
 
   core.setOutput('version', isValidTag ? tag : version.toString())
 }
 
 async function run() {
-  const slackOnly = core.getBooleanInput('slack-only')
+  const createReleaseOption = core.getBooleanInput('create-release')
   const SLACK_BOT_TOKEN = core.getInput('SLACK_BOT_TOKEN')
-
-  if (slackOnly && !SLACK_BOT_TOKEN) {
-    throw new Error('Slack only mode is set but SLACK_BOT_TOKEN is missing!')
-  }
 
   const slackConfig = {
     title: core.getInput('title'),
@@ -65,9 +52,9 @@ async function run() {
     mergeItems: core.getBooleanInput('merge-items'),
     channel: core.getInput('channel'),
     repostChannels: core.getInput('repost-channels'),
-    customChangelog: core.getBooleanInput('custom-changelog'),
+    customChangelog: core.getBooleanInput('custom-github-changelog'),
     SLACK_BOT_TOKEN,
-    useLatestRelease: core.getBooleanInput('use-latest-release'),
+    blocks: core.getInput('blocks'),
   }
 
   let release
@@ -75,15 +62,15 @@ async function run() {
     const response = await octokit.request('GET /repos/{owner}/{repo}/releases/latest', { owner, repo })
     release = response.data
 
-    if (slackOnly) {
+    if (!createReleaseOption) {
       await sendSlackReleaseNotes(response.data as Data, slackConfig)
       return
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (err: any) {
-    if (slackOnly) {
-      throw new Error('No release found!')
+    if (!createReleaseOption && !slackConfig.blocks) {
+      throw new Error('You are trying use the latest release but there is no release available.')
     }
 
     if (err.message !== 'Not Found') {

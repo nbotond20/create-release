@@ -11,6 +11,7 @@ export type SlackConfig = {
   repostChannels?: string
   customChangelog?: boolean
   useLatestRelease?: boolean
+  blocks?: string
 }
 
 export type Data = {
@@ -19,8 +20,60 @@ export type Data = {
 }
 
 export async function sendSlackReleaseNotes(data: Data, config: SlackConfig) {
+  if (!config.SLACK_BOT_TOKEN) {
+    throw new Error('SLACK_BOT_TOKEN is not set')
+  }
+
   if (!config.channel) {
     throw new Error('Channel is not set')
+  }
+
+  if (config.blocks) {
+    let parsedBlocks
+    try {
+      parsedBlocks = JSON.parse(config.blocks)
+    } catch {
+      throw new Error('Failed to parse blocks as JSON!')
+    }
+
+    if (!Array.isArray(parsedBlocks)) {
+      throw new Error('Blocks must be an array of Slack blocks!')
+    }
+
+    const slackPayload = {
+      channel: config.channel,
+      text: config.title || 'Release notes',
+      blocks: [
+        ...(config.title
+          ? [
+              {
+                text: {
+                  emoji: true,
+                  text: config.title,
+                  type: 'plain_text',
+                },
+                type: 'header',
+              },
+            ]
+          : []),
+        ...parsedBlocks,
+      ],
+    }
+
+    const slackAPIResponse = await fetch('https://slack.com/api/chat.postMessage', {
+      method: 'POST',
+      body: JSON.stringify(slackPayload),
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${config.SLACK_BOT_TOKEN}`,
+      },
+    })
+
+    if (!slackAPIResponse.ok) {
+      throw new Error('Error sending slack message')
+    }
+
+    return
   }
 
   const createSlackLinkFromPRLink = (prLink: string) => {
@@ -132,6 +185,7 @@ export async function sendSlackReleaseNotes(data: Data, config: SlackConfig) {
   }
 
   // Replace TCI numbers with slack links (format: <link|text>)
+  // TODO: Move this to a separate action input
   const TCI_PATTERN = /INC-\d+/g
   const TCI_LINK = 'https://helpdesk.infinitaslearning.com/a/tickets/'
   const tcis = sections.match(TCI_PATTERN)
