@@ -1,5 +1,5 @@
 {
-  "name": "actions",
+  "name": "create-release-action",
   "version": "1.0.0",
   "description": "",
   "main": "src/index.mjs",
