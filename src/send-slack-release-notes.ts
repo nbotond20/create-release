@@ -20,10 +20,6 @@ export type Data = {
 }
 
 export async function sendSlackReleaseNotes(data: Data, config: SlackConfig) {
-  if (!config.SLACK_BOT_TOKEN) {
-    throw new Error('SLACK_BOT_TOKEN is not set')
-  }
-
   if (!config.channel) {
     throw new Error('Channel is not set')
   }

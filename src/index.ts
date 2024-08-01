@@ -33,7 +33,9 @@ async function createRelease(version: Version | SemanticVersion, slackConfig: Sl
     target_commitish: process.env.GITHUB_SHA,
   })
 
-  await sendSlackReleaseNotes(data as Data, slackConfig)
+  if (slackConfig.SLACK_BOT_TOKEN) {
+    await sendSlackReleaseNotes(data as Data, slackConfig)
+  }
 
   core.setOutput('version', isValidTag ? tag : version.toString())
 }
@@ -63,6 +65,9 @@ async function run() {
     release = response.data
 
     if (!createReleaseOption) {
+      if (!slackConfig.SLACK_BOT_TOKEN) {
+        throw new Error('SLACK_BOT_TOKEN is not set')
+      }
       await sendSlackReleaseNotes(response.data as Data, slackConfig)
       return
     }

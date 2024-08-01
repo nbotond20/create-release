@@ -51199,7 +51199,9 @@ async function createRelease(version, slackConfig) {
         generate_release_notes: true,
         target_commitish: process.env.GITHUB_SHA,
     });
-    await (0, send_slack_release_notes_js_1.sendSlackReleaseNotes)(data, slackConfig);
+    if (slackConfig.SLACK_BOT_TOKEN) {
+        await (0, send_slack_release_notes_js_1.sendSlackReleaseNotes)(data, slackConfig);
+    }
     core.setOutput('version', isValidTag ? tag : version.toString());
 }
 async function run() {
@@ -51224,6 +51226,9 @@ async function run() {
         const response = await octokit.request('GET /repos/{owner}/{repo}/releases/latest', { owner, repo });
         release = response.data;
         if (!createReleaseOption) {
+            if (!slackConfig.SLACK_BOT_TOKEN) {
+                throw new Error('SLACK_BOT_TOKEN is not set');
+            }
             await (0, send_slack_release_notes_js_1.sendSlackReleaseNotes)(response.data, slackConfig);
             return;
         }
@@ -51312,9 +51317,6 @@ exports.SemanticVersion = SemanticVersion;
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.sendSlackReleaseNotes = void 0;
 async function sendSlackReleaseNotes(data, config) {
-    if (!config.SLACK_BOT_TOKEN) {
-        throw new Error('SLACK_BOT_TOKEN is not set');
-    }
     if (!config.channel) {
         throw new Error('Channel is not set');
     }
