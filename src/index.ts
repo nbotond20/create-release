@@ -44,7 +44,7 @@ async function run() {
   const createReleaseOption = core.getBooleanInput('create-release')
   const SLACK_BOT_TOKEN = core.getInput('SLACK_BOT_TOKEN')
 
-  const slackConfig = {
+  const slackConfig: SlackConfig = {
     title: core.getInput('title'),
     hideAuthors: core.getBooleanInput('hide-authors'),
     hidePRs: core.getBooleanInput('hide-prs'),
@@ -57,6 +57,7 @@ async function run() {
     customChangelog: core.getBooleanInput('custom-github-changelog'),
     SLACK_BOT_TOKEN,
     blocks: core.getInput('blocks'),
+    groupId: core.getInput('group-id'),
   }
 
   let release

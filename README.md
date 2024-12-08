@@ -28,6 +28,7 @@ For this to work you'll need to create a Slack app and add it to your workspace.
 - `merge-items`: (default: `false`) Merge auto generated items in release notes. If you have a custom `release.yml` file and you provide a category which name includes one of the following words (`automated`, `automation`, `automatization`, `bot`, `script`, `generated`), the duplicated items will be merge to make the release note more readable.
 - `channel`: Channel to publish to
 - `repost-channels`: Channels to repost to (`;` separated)
+- `group-id`: Group ID to tag in the message (Used for showing the group handle in the release notes for easier tagging in case of an issue. E.g. `S083QT5S1GF`)
 
 ## Outputs
 
