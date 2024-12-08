@@ -41,6 +41,8 @@ inputs:
     default: 'true'
   blocks:
     description: 'Blocks to add to the release'
+  group-id:
+    description: 'Group ID (Used for showing the group handle in the release notes for easier tagging in case of an issue)'
 
 outputs:
   version:

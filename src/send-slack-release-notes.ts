@@ -12,6 +12,7 @@ export type SlackConfig = {
   customChangelog?: boolean
   useLatestRelease?: boolean
   blocks?: string
+  groupId?: string
 }
 
 export type Data = {
@@ -309,7 +310,10 @@ export async function sendSlackReleaseNotes(data: Data, config: SlackConfig) {
                 text: 'Approve',
               },
               style: 'primary',
-              value: config.repostChannels,
+              value: JSON.stringify({
+                repostChannels: config.repostChannels,
+                groupId: config.groupId,
+              }),
               action_id: 'approve_release_notes',
               confirm: {
                 title: {
@@ -345,10 +349,25 @@ export async function sendSlackReleaseNotes(data: Data, config: SlackConfig) {
       ]
     : []
 
+  const tagTeamBlock =
+    config.groupId && !config.repostChannels
+      ? [
+          {
+            type: 'context',
+            elements: [
+              {
+                type: 'mrkdwn',
+                text: `For more information or in case of an issue please tag: <!subteam^${config.groupId}>`,
+              },
+            ],
+          },
+        ]
+      : []
+
   const slackPayload = {
     channel: config.channel,
     text: title,
-    blocks: [...headerBlock, ...sectionBlocks.flat(), ...changelogLinkBlock, ...actionBlock],
+    blocks: [...headerBlock, ...sectionBlocks.flat(), ...changelogLinkBlock, ...actionBlock, ...tagTeamBlock],
   }
 
   const slackAPIResponse = await fetch('https://slack.com/api/chat.postMessage', {

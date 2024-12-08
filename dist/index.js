@@ -51220,6 +51220,7 @@ async function run() {
         customChangelog: core.getBooleanInput('custom-github-changelog'),
         SLACK_BOT_TOKEN,
         blocks: core.getInput('blocks'),
+        groupId: core.getInput('group-id'),
     };
     let release;
     try {
@@ -51570,7 +51571,10 @@ async function sendSlackReleaseNotes(data, config) {
                             text: 'Approve',
                         },
                         style: 'primary',
-                        value: config.repostChannels,
+                        value: JSON.stringify({
+                            repostChannels: config.repostChannels,
+                            groupId: config.groupId,
+                        }),
                         action_id: 'approve_release_notes',
                         confirm: {
                             title: {
@@ -51605,10 +51609,23 @@ async function sendSlackReleaseNotes(data, config) {
             },
         ]
         : [];
+    const tagTeamBlock = config.groupId && !config.repostChannels
+        ? [
+            {
+                type: 'context',
+                elements: [
+                    {
+                        type: 'mrkdwn',
+                        text: `For more information or in case of an issue please tag: <!subteam^${config.groupId}>`,
+                    },
+                ],
+            },
+        ]
+        : [];
     const slackPayload = {
         channel: config.channel,
         text: title,
-        blocks: [...headerBlock, ...sectionBlocks.flat(), ...changelogLinkBlock, ...actionBlock],
+        blocks: [...headerBlock, ...sectionBlocks.flat(), ...changelogLinkBlock, ...actionBlock, ...tagTeamBlock],
     };
     const slackAPIResponse = await fetch('https://slack.com/api/chat.postMessage', {
         method: 'POST',
