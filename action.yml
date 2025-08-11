@@ -21,8 +21,8 @@ inputs:
   add-divider:
     description: 'Add divider in release notes'
     default: 'false'
-  channel:
-    description: 'Channel to publish to'
+  channels:
+    description: 'Channels to publish to'
   repost-channels:
     description: 'Channels to repost to'
   use-sem-ver:

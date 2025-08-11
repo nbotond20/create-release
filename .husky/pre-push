@@ -7,6 +7,6 @@ git add dist
 
 if [[ $(git diff --cached --name-only | grep dist) ]]; then
   echo "dist folder is in git changes"
-  git commit -m "🤖 Auto build update"
+  git commit -m "🤖 Auto Action build update"
   exit 0
 fi

@@ -52,7 +52,7 @@ async function run() {
     hideTitle: core.getBooleanInput('hide-title'),
     addDivider: core.getBooleanInput('add-divider'),
     mergeItems: core.getBooleanInput('merge-items'),
-    channel: core.getInput('channel'),
+    channels: core.getInput('channels'),
     repostChannels: core.getInput('repost-channels'),
     customChangelog: core.getBooleanInput('custom-github-changelog'),
     SLACK_BOT_TOKEN,

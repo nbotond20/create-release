@@ -1,5 +1,5 @@
 export type SlackConfig = {
-  channel: string
+  channels: string
   SLACK_BOT_TOKEN: string
   title?: string
   hideTitle?: boolean
@@ -21,8 +21,8 @@ export type Data = {
 }
 
 export async function sendSlackReleaseNotes(data: Data, config: SlackConfig) {
-  if (!config.channel) {
-    throw new Error('Channel is not set')
+  if (!config.channels) {
+    throw new Error('Channels are not set')
   }
 
   if (config.blocks) {
@@ -37,37 +37,39 @@ export async function sendSlackReleaseNotes(data: Data, config: SlackConfig) {
       throw new Error('Blocks must be an array of Slack blocks!')
     }
 
-    const slackPayload = {
-      channel: config.channel,
-      text: config.title || 'Release notes',
-      blocks: [
-        ...(config.title
-          ? [
-              {
-                text: {
-                  emoji: true,
-                  text: config.title,
-                  type: 'plain_text',
+    for (const channel of config.channels.split(';')) {
+      const slackPayload = {
+        channel,
+        text: config.title || 'Release notes',
+        blocks: [
+          ...(config.title
+            ? [
+                {
+                  text: {
+                    emoji: true,
+                    text: config.title,
+                    type: 'plain_text',
+                  },
+                  type: 'header',
                 },
-                type: 'header',
-              },
-            ]
-          : []),
-        ...parsedBlocks,
-      ],
-    }
+              ]
+            : []),
+          ...parsedBlocks,
+        ],
+      }
 
-    const slackAPIResponse = await fetch('https://slack.com/api/chat.postMessage', {
-      method: 'POST',
-      body: JSON.stringify(slackPayload),
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${config.SLACK_BOT_TOKEN}`,
-      },
-    })
+      const slackAPIResponse = await fetch('https://slack.com/api/chat.postMessage', {
+        method: 'POST',
+        body: JSON.stringify(slackPayload),
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${config.SLACK_BOT_TOKEN}`,
+        },
+      })
 
-    if (!slackAPIResponse.ok) {
-      throw new Error('Error sending slack message')
+      if (!slackAPIResponse.ok) {
+        throw new Error('Error sending slack message')
+      }
     }
 
     return
@@ -92,39 +94,41 @@ export async function sendSlackReleaseNotes(data: Data, config: SlackConfig) {
 
   // If custom changelog is enabled, use the body as is
   if (config.customChangelog) {
-    const slackPayload = {
-      channel: config.channel,
-      text: title,
-      blocks: [
-        {
-          text: {
-            emoji: true,
-            text: title,
-            type: 'plain_text',
+    for (const channel of config.channels.split(';')) {
+      const slackPayload = {
+        channel,
+        text: title,
+        blocks: [
+          {
+            text: {
+              emoji: true,
+              text: title,
+              type: 'plain_text',
+            },
+            type: 'header',
           },
-          type: 'header',
-        },
-        {
-          type: 'section',
-          text: {
-            type: 'mrkdwn',
-            text: data.body,
+          {
+            type: 'section',
+            text: {
+              type: 'mrkdwn',
+              text: data.body,
+            },
           },
+        ],
+      }
+
+      const slackAPIResponse = await fetch('https://slack.com/api/chat.postMessage', {
+        method: 'POST',
+        body: JSON.stringify(slackPayload),
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${config.SLACK_BOT_TOKEN}`,
         },
-      ],
-    }
+      })
 
-    const slackAPIResponse = await fetch('https://slack.com/api/chat.postMessage', {
-      method: 'POST',
-      body: JSON.stringify(slackPayload),
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${config.SLACK_BOT_TOKEN}`,
-      },
-    })
-
-    if (!slackAPIResponse.ok) {
-      throw new Error('Error sending slack message')
+      if (!slackAPIResponse.ok) {
+        throw new Error('Error sending slack message')
+      }
     }
 
     return
@@ -364,22 +368,25 @@ export async function sendSlackReleaseNotes(data: Data, config: SlackConfig) {
         ]
       : []
 
-  const slackPayload = {
-    channel: config.channel,
-    text: title,
-    blocks: [...headerBlock, ...sectionBlocks.flat(), ...changelogLinkBlock, ...actionBlock, ...tagTeamBlock],
-  }
+  const blocks = [...headerBlock, ...sectionBlocks.flat(), ...changelogLinkBlock, ...actionBlock, ...tagTeamBlock]
+  for (const channel of config.channels.split(';')) {
+    const slackPayload = {
+      channel,
+      text: title,
+      blocks,
+    }
 
-  const slackAPIResponse = await fetch('https://slack.com/api/chat.postMessage', {
-    method: 'POST',
-    body: JSON.stringify(slackPayload),
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${config.SLACK_BOT_TOKEN}`,
-    },
-  })
+    const slackAPIResponse = await fetch('https://slack.com/api/chat.postMessage', {
+      method: 'POST',
+      body: JSON.stringify(slackPayload),
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${config.SLACK_BOT_TOKEN}`,
+      },
+    })
 
-  if (!slackAPIResponse.ok) {
-    throw new Error('Error sending slack message')
+    if (!slackAPIResponse.ok) {
+      throw new Error('Error sending slack message')
+    }
   }
 }
