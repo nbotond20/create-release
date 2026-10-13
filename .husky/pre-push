@@ -1,12 +1,6 @@
-#!/bin/sh
-. "$(dirname "$0")/_/husky.sh"
-
-pnpm run build
-git restore --staged .
-git add dist
-
-if [[ $(git diff --cached --name-only | grep dist) ]]; then
-  echo "dist folder is in git changes"
-  git commit -m "🤖 Auto Action build update"
-  exit 0
+pnpm check
+pnpm build
+if ! git diff --quiet -- dist; then
+  echo "dist/ is out of date. Commit the rebuilt dist/ and push again."
+  exit 1
 fi

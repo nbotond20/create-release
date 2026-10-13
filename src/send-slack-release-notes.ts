@@ -1,3 +1,7 @@
+import * as core from '@actions/core'
+import { DetailedError } from './logger.js'
+import { parseChannels, postSlackMessages, type SlackBlock } from './slack-api.js'
+
 export type SlackConfig = {
   channels: string
   SLACK_BOT_TOKEN: string
@@ -10,7 +14,6 @@ export type SlackConfig = {
   mergeItems?: boolean
   repostChannels?: string
   customChangelog?: boolean
-  useLatestRelease?: boolean
   blocks?: string
   groupId?: string
 }
@@ -21,58 +24,63 @@ export type Data = {
 }
 
 export async function sendSlackReleaseNotes(data: Data, config: SlackConfig) {
-  if (!config.channels) {
-    throw new Error('Channels are not set')
+  const channels = parseChannels(config.channels ?? '')
+  const { text, blocks } = buildSlackMessage(data, config)
+  core.info(`Built Slack message "${text}" with ${blocks.length} blocks for ${channels.length} channel(s)`)
+  await postSlackMessages(config.SLACK_BOT_TOKEN, channels, channel => ({ channel, text, blocks }))
+}
+
+export function parseCustomBlocks(blocks: string): SlackBlock[] {
+  let parsedBlocks
+  try {
+    parsedBlocks = JSON.parse(blocks)
+  } catch (err) {
+    throw new DetailedError('Failed to parse the `blocks` input as JSON', [
+      `JSON error: ${(err as Error).message}`,
+      `Input starts with: ${blocks.slice(0, 200)}`,
+      'Hint: `blocks` must be a JSON array (double-quoted keys/strings, no trailing commas), e.g. [{"type":"divider"}].',
+      'Hint: build and validate it in Block Kit Builder: https://app.slack.com/block-kit-builder',
+    ])
   }
 
+  if (!Array.isArray(parsedBlocks)) {
+    throw new DetailedError('The `blocks` input must be a JSON array of Slack blocks', [
+      `Got: ${typeof parsedBlocks}`,
+      'Hint: wrap your blocks in [ ... ].',
+    ])
+  }
+
+  const invalid = parsedBlocks.findIndex(block => typeof block !== 'object' || block === null || !('type' in block))
+  if (invalid !== -1) {
+    throw new DetailedError(`Block #${invalid} in the \`blocks\` input is missing a "type" field`, [
+      `Block: ${JSON.stringify(parsedBlocks[invalid])}`,
+    ])
+  }
+
+  return parsedBlocks
+}
+
+export function buildSlackMessage(data: Data, config: SlackConfig): { text: string; blocks: SlackBlock[] } {
   if (config.blocks) {
-    let parsedBlocks
-    try {
-      parsedBlocks = JSON.parse(config.blocks)
-    } catch {
-      throw new Error('Failed to parse blocks as JSON!')
-    }
-
-    if (!Array.isArray(parsedBlocks)) {
-      throw new Error('Blocks must be an array of Slack blocks!')
-    }
-
-    for (const channel of config.channels.split(';')) {
-      const slackPayload = {
-        channel,
-        text: config.title || 'Release notes',
-        blocks: [
-          ...(config.title
-            ? [
-                {
-                  text: {
-                    emoji: true,
-                    text: config.title,
-                    type: 'plain_text',
-                  },
-                  type: 'header',
+    const parsedBlocks = parseCustomBlocks(config.blocks)
+    return {
+      text: config.title || 'Release notes',
+      blocks: [
+        ...(config.title
+          ? [
+              {
+                text: {
+                  emoji: true,
+                  text: config.title,
+                  type: 'plain_text',
                 },
-              ]
-            : []),
-          ...parsedBlocks,
-        ],
-      }
-
-      const slackAPIResponse = await fetch('https://slack.com/api/chat.postMessage', {
-        method: 'POST',
-        body: JSON.stringify(slackPayload),
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${config.SLACK_BOT_TOKEN}`,
-        },
-      })
-
-      if (!slackAPIResponse.ok) {
-        throw new Error('Error sending slack message')
-      }
+                type: 'header',
+              },
+            ]
+          : []),
+        ...parsedBlocks,
+      ],
     }
-
-    return
   }
 
   const createSlackLinkFromPRLink = (prLink: string) => {
@@ -94,51 +102,43 @@ export async function sendSlackReleaseNotes(data: Data, config: SlackConfig) {
 
   // If custom changelog is enabled, use the body as is
   if (config.customChangelog) {
-    for (const channel of config.channels.split(';')) {
-      const slackPayload = {
-        channel,
-        text: title,
-        blocks: [
-          {
-            text: {
-              emoji: true,
-              text: title,
-              type: 'plain_text',
-            },
-            type: 'header',
-          },
-          {
-            type: 'section',
-            text: {
-              type: 'mrkdwn',
-              text: data.body,
-            },
-          },
-        ],
-      }
-
-      const slackAPIResponse = await fetch('https://slack.com/api/chat.postMessage', {
-        method: 'POST',
-        body: JSON.stringify(slackPayload),
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${config.SLACK_BOT_TOKEN}`,
-        },
-      })
-
-      if (!slackAPIResponse.ok) {
-        throw new Error('Error sending slack message')
-      }
+    if (!data.body?.trim()) {
+      throw new DetailedError('`custom-github-changelog` is enabled but the release body is empty', [
+        `Release: ${data.name}`,
+      ])
     }
-
-    return
+    return {
+      text: title,
+      blocks: [
+        {
+          text: {
+            emoji: true,
+            text: title,
+            type: 'plain_text',
+          },
+          type: 'header',
+        },
+        {
+          type: 'section',
+          text: {
+            type: 'mrkdwn',
+            text: data.body,
+          },
+        },
+      ],
+    }
   }
 
   // Get full changelog link
-  const bodyWithoutNewContributorSection = data.body.replace(/## New Contributors[\s\S]*?\n\n/g, '\n')
+  const body = (data.body ?? '').replaceAll('\r\n', '\n')
+  if (!body.trim()) {
+    core.warning(`Release ${data.name} has an empty body; the Slack message will only contain the title.`)
+  }
+  const bodyWithoutNewContributorSection = body.replace(/## New Contributors[\s\S]*?\n\n/g, '\n')
 
-  const fullChangelogLink = bodyWithoutNewContributorSection.split('\n\n\n')!.pop()!.trim()
-  const fullChangelogSlackLink = createSlackLinkFromChangeLogLink(fullChangelogLink)
+  const fullChangelogLink = bodyWithoutNewContributorSection.match(/\*\*Full Changelog\*\*: \S+/)?.[0] ?? ''
+  if (!fullChangelogLink) core.info('No "Full Changelog" link found in the release body')
+  const fullChangelogSlackLink = fullChangelogLink ? createSlackLinkFromChangeLogLink(fullChangelogLink) : ''
 
   // Get sections
   let sections: string
@@ -212,19 +212,20 @@ export async function sendSlackReleaseNotes(data: Data, config: SlackConfig) {
     : []
 
   // Create changelog block
-  const changelogLinkBlock = !config.hideFullChangeLogLink
-    ? [
-        {
-          type: 'context',
-          elements: [
-            {
-              text: fullChangelogSlackLink.replaceAll('**', '*'),
-              type: 'mrkdwn',
-            },
-          ],
-        },
-      ]
-    : []
+  const changelogLinkBlock =
+    !config.hideFullChangeLogLink && fullChangelogSlackLink
+      ? [
+          {
+            type: 'context',
+            elements: [
+              {
+                text: fullChangelogSlackLink.replaceAll('**', '*'),
+                type: 'mrkdwn',
+              },
+            ],
+          },
+        ]
+      : []
 
   const sectionArray = isSectioned ? sections.split('<section-title>').slice(1) : [sections] // Split into sections and remove the first empty section
 
@@ -369,24 +370,5 @@ export async function sendSlackReleaseNotes(data: Data, config: SlackConfig) {
       : []
 
   const blocks = [...headerBlock, ...sectionBlocks.flat(), ...changelogLinkBlock, ...actionBlock, ...tagTeamBlock]
-  for (const channel of config.channels.split(';')) {
-    const slackPayload = {
-      channel,
-      text: title,
-      blocks,
-    }
-
-    const slackAPIResponse = await fetch('https://slack.com/api/chat.postMessage', {
-      method: 'POST',
-      body: JSON.stringify(slackPayload),
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${config.SLACK_BOT_TOKEN}`,
-      },
-    })
-
-    if (!slackAPIResponse.ok) {
-      throw new Error('Error sending slack message')
-    }
-  }
+  return { text: title, blocks }
 }

@@ -1,0 +1,488 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`sendSlackReleaseNotes payloads > custom blocks with title 1`] = `
+[
+  {
+    "blocks": [
+      {
+        "text": {
+          "emoji": true,
+          "text": "Heads up",
+          "type": "plain_text",
+        },
+        "type": "header",
+      },
+      {
+        "type": "divider",
+      },
+    ],
+    "channel": "releases",
+    "text": "Heads up",
+  },
+]
+`;
+
+exports[`sendSlackReleaseNotes payloads > custom blocks without title 1`] = `
+[
+  {
+    "blocks": [
+      {
+        "type": "divider",
+      },
+    ],
+    "channel": "releases",
+    "text": "Release notes",
+  },
+]
+`;
+
+exports[`sendSlackReleaseNotes payloads > custom changelog 1`] = `
+[
+  {
+    "blocks": [
+      {
+        "text": {
+          "emoji": true,
+          "text": "Notes for v1.0.1",
+          "type": "plain_text",
+        },
+        "type": "header",
+      },
+      {
+        "text": {
+          "text": "*Hand written* notes",
+          "type": "mrkdwn",
+        },
+        "type": "section",
+      },
+    ],
+    "channel": "releases",
+    "text": "Notes for v1.0.1",
+  },
+]
+`;
+
+exports[`sendSlackReleaseNotes payloads > plain body, custom title + hidden link 1`] = `
+[
+  {
+    "blocks": [
+      {
+        "text": {
+          "emoji": true,
+          "text": "Release v1.0.1",
+          "type": "plain_text",
+        },
+        "type": "header",
+      },
+      {
+        "text": {
+          "text": "• Add login page by <https://github.com/alice|@alice> in <https://github.com/acme/app/pull/10|#10>
+• Fix crash <https://helpdesk.infinitaslearning.com/a/tickets/123|INC-123> by <https://github.com/bob|@bob> in <https://github.com/acme/app/pull/11|#11>
+",
+          "type": "mrkdwn",
+        },
+        "type": "section",
+      },
+    ],
+    "channel": "releases",
+    "text": "Release v1.0.1",
+  },
+]
+`;
+
+exports[`sendSlackReleaseNotes payloads > plain body, defaults 1`] = `
+[
+  {
+    "blocks": [
+      {
+        "text": {
+          "emoji": true,
+          "text": "v1.0.1",
+          "type": "plain_text",
+        },
+        "type": "header",
+      },
+      {
+        "text": {
+          "text": "• Add login page by <https://github.com/alice|@alice> in <https://github.com/acme/app/pull/10|#10>
+• Fix crash <https://helpdesk.infinitaslearning.com/a/tickets/123|INC-123> by <https://github.com/bob|@bob> in <https://github.com/acme/app/pull/11|#11>
+",
+          "type": "mrkdwn",
+        },
+        "type": "section",
+      },
+      {
+        "elements": [
+          {
+            "text": "*Full Changelog*: <https://github.com/acme/app/compare/v1.0.0...v1.0.1|v1.0.0...v1.0.1>",
+            "type": "mrkdwn",
+          },
+        ],
+        "type": "context",
+      },
+    ],
+    "channel": "releases",
+    "text": "v1.0.1",
+  },
+]
+`;
+
+exports[`sendSlackReleaseNotes payloads > plain body, hidden title + group id 1`] = `
+[
+  {
+    "blocks": [
+      {
+        "text": {
+          "text": "• Add login page by <https://github.com/alice|@alice> in <https://github.com/acme/app/pull/10|#10>
+• Fix crash <https://helpdesk.infinitaslearning.com/a/tickets/123|INC-123> by <https://github.com/bob|@bob> in <https://github.com/acme/app/pull/11|#11>
+",
+          "type": "mrkdwn",
+        },
+        "type": "section",
+      },
+      {
+        "elements": [
+          {
+            "text": "*Full Changelog*: <https://github.com/acme/app/compare/v1.0.0...v1.0.1|v1.0.0...v1.0.1>",
+            "type": "mrkdwn",
+          },
+        ],
+        "type": "context",
+      },
+      {
+        "elements": [
+          {
+            "text": "For more information or in case of an issue please tag: <!subteam^S123>",
+            "type": "mrkdwn",
+          },
+        ],
+        "type": "context",
+      },
+    ],
+    "channel": "releases",
+    "text": "v1.0.1",
+  },
+]
+`;
+
+exports[`sendSlackReleaseNotes payloads > plain body, hide authors + PRs 1`] = `
+[
+  {
+    "blocks": [
+      {
+        "text": {
+          "emoji": true,
+          "text": "v1.0.1",
+          "type": "plain_text",
+        },
+        "type": "header",
+      },
+      {
+        "text": {
+          "text": "• Add login page
+• Fix crash <https://helpdesk.infinitaslearning.com/a/tickets/123|INC-123>
+",
+          "type": "mrkdwn",
+        },
+        "type": "section",
+      },
+      {
+        "elements": [
+          {
+            "text": "*Full Changelog*: <https://github.com/acme/app/compare/v1.0.0...v1.0.1|v1.0.0...v1.0.1>",
+            "type": "mrkdwn",
+          },
+        ],
+        "type": "context",
+      },
+    ],
+    "channel": "releases",
+    "text": "v1.0.1",
+  },
+]
+`;
+
+exports[`sendSlackReleaseNotes payloads > sectioned body, defaults 1`] = `
+[
+  {
+    "blocks": [
+      {
+        "text": {
+          "emoji": true,
+          "text": "v1.0.1",
+          "type": "plain_text",
+        },
+        "type": "header",
+      },
+      {
+        "text": {
+          "text": "*Exciting New Features 🎉*
+
+• Add search by <https://github.com/alice|@alice> in <https://github.com/acme/app/pull/20|#20>
+",
+          "type": "mrkdwn",
+        },
+        "type": "section",
+      },
+      {
+        "text": {
+          "text": "*Automated Fixes 🤖*
+
+• Bump lodash by <https://github.com/dependabot|@dependabot> in <https://github.com/acme/app/pull/21|#21>
+• Bump lodash by <https://github.com/dependabot|@dependabot> in <https://github.com/acme/app/pull/22|#22>
+• Bump react by <https://github.com/dependabot|@dependabot> in <https://github.com/acme/app/pull/23|#23>
+",
+          "type": "mrkdwn",
+        },
+        "type": "section",
+      },
+      {
+        "text": {
+          "text": "*Other Changes*
+
+• Refactor <https://helpdesk.infinitaslearning.com/a/tickets/7|INC-7> and <https://helpdesk.infinitaslearning.com/a/tickets/7|INC-7> by <https://github.com/carol|@carol> in <https://github.com/acme/app/pull/24|#24>",
+          "type": "mrkdwn",
+        },
+        "type": "section",
+      },
+      {
+        "elements": [
+          {
+            "text": "*Full Changelog*: <https://github.com/acme/app/compare/v2610.1...v2610.2|v2610.1...v2610.2>",
+            "type": "mrkdwn",
+          },
+        ],
+        "type": "context",
+      },
+    ],
+    "channel": "releases",
+    "text": "v1.0.1",
+  },
+]
+`;
+
+exports[`sendSlackReleaseNotes payloads > sectioned body, dividers 1`] = `
+[
+  {
+    "blocks": [
+      {
+        "text": {
+          "emoji": true,
+          "text": "v1.0.1",
+          "type": "plain_text",
+        },
+        "type": "header",
+      },
+      {
+        "text": {
+          "text": "*Exciting New Features 🎉*
+
+• Add search by <https://github.com/alice|@alice> in <https://github.com/acme/app/pull/20|#20>
+",
+          "type": "mrkdwn",
+        },
+        "type": "section",
+      },
+      {
+        "type": "divider",
+      },
+      {
+        "text": {
+          "text": "*Automated Fixes 🤖*
+
+• Bump lodash by <https://github.com/dependabot|@dependabot> in <https://github.com/acme/app/pull/21|#21>
+• Bump lodash by <https://github.com/dependabot|@dependabot> in <https://github.com/acme/app/pull/22|#22>
+• Bump react by <https://github.com/dependabot|@dependabot> in <https://github.com/acme/app/pull/23|#23>
+",
+          "type": "mrkdwn",
+        },
+        "type": "section",
+      },
+      {
+        "type": "divider",
+      },
+      {
+        "text": {
+          "text": "*Other Changes*
+
+• Refactor <https://helpdesk.infinitaslearning.com/a/tickets/7|INC-7> and <https://helpdesk.infinitaslearning.com/a/tickets/7|INC-7> by <https://github.com/carol|@carol> in <https://github.com/acme/app/pull/24|#24>",
+          "type": "mrkdwn",
+        },
+        "type": "section",
+      },
+      {
+        "elements": [
+          {
+            "text": "*Full Changelog*: <https://github.com/acme/app/compare/v2610.1...v2610.2|v2610.1...v2610.2>",
+            "type": "mrkdwn",
+          },
+        ],
+        "type": "context",
+      },
+    ],
+    "channel": "releases",
+    "text": "v1.0.1",
+  },
+]
+`;
+
+exports[`sendSlackReleaseNotes payloads > sectioned body, merge items 1`] = `
+[
+  {
+    "blocks": [
+      {
+        "text": {
+          "emoji": true,
+          "text": "v1.0.1",
+          "type": "plain_text",
+        },
+        "type": "header",
+      },
+      {
+        "text": {
+          "text": "*Exciting New Features 🎉*
+
+• Add search by <https://github.com/alice|@alice> in <https://github.com/acme/app/pull/20|#20>
+",
+          "type": "mrkdwn",
+        },
+        "type": "section",
+      },
+      {
+        "text": {
+          "text": "*Other Changes*
+
+• Refactor <https://helpdesk.infinitaslearning.com/a/tickets/7|INC-7> and <https://helpdesk.infinitaslearning.com/a/tickets/7|INC-7> by <https://github.com/carol|@carol> in <https://github.com/acme/app/pull/24|#24>",
+          "type": "mrkdwn",
+        },
+        "type": "section",
+      },
+      {
+        "text": {
+          "text": "*Automated Fixes 🤖*
+
+• Bump lodash in <https://github.com/acme/app/pull/21|#21>, <https://github.com/acme/app/pull/22|#22>
+• Bump react in <https://github.com/acme/app/pull/23|#23>
+",
+          "type": "mrkdwn",
+        },
+        "type": "section",
+      },
+      {
+        "elements": [
+          {
+            "text": "*Full Changelog*: <https://github.com/acme/app/compare/v2610.1...v2610.2|v2610.1...v2610.2>",
+            "type": "mrkdwn",
+          },
+        ],
+        "type": "context",
+      },
+    ],
+    "channel": "releases",
+    "text": "v1.0.1",
+  },
+]
+`;
+
+exports[`sendSlackReleaseNotes payloads > sectioned body, repost channels 1`] = `
+[
+  {
+    "blocks": [
+      {
+        "text": {
+          "emoji": true,
+          "text": "v1.0.1",
+          "type": "plain_text",
+        },
+        "type": "header",
+      },
+      {
+        "text": {
+          "text": "*Exciting New Features 🎉*
+
+• Add search by <https://github.com/alice|@alice> in <https://github.com/acme/app/pull/20|#20>
+",
+          "type": "mrkdwn",
+        },
+        "type": "section",
+      },
+      {
+        "text": {
+          "text": "*Automated Fixes 🤖*
+
+• Bump lodash by <https://github.com/dependabot|@dependabot> in <https://github.com/acme/app/pull/21|#21>
+• Bump lodash by <https://github.com/dependabot|@dependabot> in <https://github.com/acme/app/pull/22|#22>
+• Bump react by <https://github.com/dependabot|@dependabot> in <https://github.com/acme/app/pull/23|#23>
+",
+          "type": "mrkdwn",
+        },
+        "type": "section",
+      },
+      {
+        "text": {
+          "text": "*Other Changes*
+
+• Refactor <https://helpdesk.infinitaslearning.com/a/tickets/7|INC-7> and <https://helpdesk.infinitaslearning.com/a/tickets/7|INC-7> by <https://github.com/carol|@carol> in <https://github.com/acme/app/pull/24|#24>",
+          "type": "mrkdwn",
+        },
+        "type": "section",
+      },
+      {
+        "elements": [
+          {
+            "text": "*Full Changelog*: <https://github.com/acme/app/compare/v2610.1...v2610.2|v2610.1...v2610.2>",
+            "type": "mrkdwn",
+          },
+        ],
+        "type": "context",
+      },
+      {
+        "elements": [
+          {
+            "action_id": "approve_release_notes",
+            "confirm": {
+              "confirm": {
+                "text": "Approve",
+                "type": "plain_text",
+              },
+              "deny": {
+                "text": "Cancel",
+                "type": "plain_text",
+              },
+              "text": {
+                "text": "By approving this release note, you will post it to the following channel(s): #general, #team",
+                "type": "plain_text",
+              },
+              "title": {
+                "text": "Are you sure?",
+                "type": "plain_text",
+              },
+            },
+            "style": "primary",
+            "text": {
+              "emoji": true,
+              "text": "Approve",
+              "type": "plain_text",
+            },
+            "type": "button",
+            "value": "{"repostChannels":"general;team","groupId":"S123"}",
+          },
+          {
+            "action_id": "cancel_release_notes",
+            "style": "danger",
+            "text": {
+              "emoji": true,
+              "text": "Cancel",
+              "type": "plain_text",
+            },
+            "type": "button",
+          },
+        ],
+        "type": "actions",
+      },
+    ],
+    "channel": "releases",
+    "text": "v1.0.1",
+  },
+]
+`;
