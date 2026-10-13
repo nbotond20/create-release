@@ -1,18 +1,19 @@
 {
   "compilerOptions": {
-    "baseUrl": "./",
-    "outDir": "./dist",
-    "target": "ES2022",
+    "target": "ES2023",
+    "lib": ["ES2023"],
     "module": "NodeNext",
-    "skipLibCheck": true,
-    "alwaysStrict": true,
-    "strict": true,
-    "preserveConstEnums": true,
     "moduleResolution": "NodeNext",
-    "sourceMap": true,
+    "types": ["node"],
+    "strict": true,
+    "noUncheckedSideEffectImports": true,
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitOverride": true,
     "esModuleInterop": true,
-    "typeRoots": ["types"],
-    "resolveJsonModule": true
+    "resolveJsonModule": true,
+    "verbatimModuleSyntax": true,
+    "skipLibCheck": true,
+    "noEmit": true
   },
-  "include": ["src/**/*"]
+  "include": ["src", "test", "*.ts"]
 }

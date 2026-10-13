@@ -1,30 +1,50 @@
 {
   "name": "create-release-action",
-  "version": "1.0.0",
-  "description": "",
-  "main": "src/index.mjs",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "ncc build src/index.ts -o dist --license licenses.txt",
-    "prepare": "husky install"
+  "version": "4.0.0",
+  "private": true,
+  "description": "GitHub Action that creates a release and optionally posts release notes to Slack",
+  "type": "module",
+  "main": "dist/index.js",
+  "engines": {
+    "node": ">=22.12"
   },
-  "keywords": [],
-  "author": "",
+  "packageManager": "pnpm@11.9.0",
+  "scripts": {
+    "build": "ncc build src/index.ts -o dist --license licenses.txt",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "check": "pnpm typecheck && pnpm lint && pnpm format:check && pnpm test",
+    "prepare": "husky"
+  },
+  "keywords": [
+    "github-action",
+    "release",
+    "slack"
+  ],
+  "author": "Nuszpl Botond",
   "license": "ISC",
   "dependencies": {
-    "@actions/core": "^1.10.1",
-    "@actions/github": "^6.0.0",
-    "@octokit/action": "^6.0.6"
+    "@actions/core": "^3.0.1",
+    "@octokit/action": "^8.0.4",
+    "@octokit/request-error": "^7.1.2"
   },
   "devDependencies": {
-    "@vercel/ncc": "^0.38.1",
-    "@types/node": "20.11.21",
-    "@typescript-eslint/eslint-plugin": "7.1.0",
-    "eslint": "^8.55.0",
-    "eslint-config-prettier": "^9.1.0",
-    "eslint-plugin-prettier": "^5.0.0",
-    "husky": "^9.0.11",
-    "prettier": "^3.1.1",
-    "typescript": "^5.3.3"
+    "@eslint/js": "^10.0.1",
+    "@types/node": "^24.0.0",
+    "@vercel/ncc": "^0.45.0",
+    "eslint": "^10.12.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-prettier": "^5.5.6",
+    "globals": "^17.13.0",
+    "husky": "^9.1.7",
+    "prettier": "^3.9.10",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "8.71.1",
+    "vitest": "^5.0.4"
   }
 }

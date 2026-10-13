@@ -1,7 +1,14 @@
 name: 'Create release'
 description: 'Create a release'
 
+branding:
+  icon: 'tag'
+  color: 'green'
+
 inputs:
+  github-token:
+    description: 'GitHub token used to create the release (needs `contents: write`). `env.GITHUB_TOKEN` takes precedence when set.'
+    default: ${{ github.token }}
   SLACK_BOT_TOKEN:
     description: 'Slack bot token'
   title:
@@ -47,7 +54,11 @@ inputs:
 outputs:
   version:
     description: 'The version of the release'
+  release-url:
+    description: 'URL of the created GitHub release'
+  release-id:
+    description: 'ID of the created GitHub release'
 
 runs:
-  using: 'node20'
+  using: 'node24'
   main: 'dist/index.js'

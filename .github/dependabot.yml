@@ -4,16 +4,30 @@ updates:
     directory: '/'
     schedule:
       interval: 'weekly'
+    groups:
+      github-actions:
+        patterns:
+          - '*'
 
   - package-ecosystem: 'npm'
     directory: '/'
     schedule:
       interval: 'weekly'
+    cooldown:
+      default-days: 3
     groups:
       actions:
         patterns:
-          - '@actions*'
-      eslint:
+          - '@actions/*'
+          - '@octokit/*'
+      lint:
         patterns:
           - 'eslint*'
+          - '@eslint/*'
+          - 'typescript-eslint'
           - '@typescript-eslint/*'
+          - 'prettier'
+      dev-tooling:
+        dependency-type: 'development'
+        patterns:
+          - '*'
